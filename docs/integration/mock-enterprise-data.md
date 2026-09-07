@@ -17,13 +17,13 @@ Mock은 단순 샘플 데이터가 아니라, 이후 실제 사내 시스템 Ada
 | Source | 대표 정보 |
 |---|---|
 | `github` | Repository, Code, Script, Library, Agent 구현 |
-| `wiki` | Architecture, Design, API Guide, Usage Guide, 운영 문서 |
+| `confluence` | Architecture, Design, API Guide, Usage Guide, 운영 문서 |
 | `jira` | Requirement, Feature, Issue, 개발 이력, Known Limitation |
 | `ims` | Incident, 장애 이력, 운영 Risk, Known Problem |
 | `bizforce` | Customer, Project, Forecast, Opportunity, 영업 Context |
 | `edm` | 사내 문서, 보고서, 제안서, 시장/제품 분석 자료 |
 
-> Wiki와 Confluence 계열 문서는 Mock에서 `wiki` Source로 통합한다.
+> Wiki / Confluence 계열 사내 문서 Source는 Mock에서 `confluence`로 통합한다.
 
 ## Identity / Permission Context
 
@@ -38,12 +38,12 @@ Mock에서는 SSO 자체를 구현하기보다 representative user와 permission
   {
     "user_id": "mock-dev-user",
     "role": "Developer",
-    "accessible_sources": ["github", "wiki", "jira", "ims"]
+    "accessible_sources": ["github", "confluence", "jira", "ims"]
   },
   {
     "user_id": "mock-sales-user",
     "role": "Sales",
-    "accessible_sources": ["wiki", "bizforce", "edm", "jira"]
+    "accessible_sources": ["confluence", "bizforce", "edm", "jira"]
   }
 ]
 ```
@@ -76,7 +76,7 @@ Asset의 존재, 기능, 상태, 제약, 운영 이력 등을 설명하는 Sourc
 ```text
 Customer 360 Dashboard
 ├─ BizForce: 고객/Forecast 데이터 연계 정보
-├─ Wiki: 기능 및 사용 가이드
+├─ Confluence: 기능 및 사용 가이드
 └─ Jira: Feature 추가 및 Known Limitation 이력
 ```
 
@@ -84,18 +84,18 @@ Customer 360 Dashboard
 
 | ID | Asset | Type | 대표 Use Case | Evidence Sources |
 |---|---|---|---|---|
-| asset-001 | Customer 360 Dashboard | Dashboard | SALES-01 | bizforce, wiki, jira |
-| asset-002 | Forecast Insight Dashboard | Dashboard | SALES-01 | bizforce, github, wiki |
-| asset-003 | Customer Risk API | API | SALES-01 | github, wiki, ims |
-| asset-004 | Customer Request Tracker | Tool | SALES-01 | bizforce, jira, wiki |
-| asset-005 | Similar Code Finder | Tool | DEV-01 | github, wiki, jira |
-| asset-006 | Issue & PR Knowledge Agent | Agent | DEV-01 | github, jira, wiki |
-| asset-007 | Legacy Feature Helper | Library | DEV-01 | github, wiki, ims |
-| asset-008 | Dev Workflow Automation Skill | Skill | DEV-02 | github, wiki, jira |
-| asset-009 | Release Task Script | Script | DEV-02 | github, wiki, ims |
-| asset-010 | News Monitoring Agent | Agent | SALES-06 | github, wiki, edm |
-| asset-011 | IR Document Analyzer | Skill | SALES-06 | github, edm, wiki |
-| asset-012 | Market Consensus Analyzer | Tool | SALES-06 | edm, bizforce, wiki |
+| asset-001 | Customer 360 Dashboard | Dashboard | SALES-01 | bizforce, confluence, jira |
+| asset-002 | Forecast Insight Dashboard | Dashboard | SALES-01 | bizforce, github, confluence |
+| asset-003 | Customer Risk API | API | SALES-01 | github, confluence, ims |
+| asset-004 | Customer Request Tracker | Tool | SALES-01 | bizforce, jira, confluence |
+| asset-005 | Similar Code Finder | Tool | DEV-01 | github, confluence, jira |
+| asset-006 | Issue & PR Knowledge Agent | Agent | DEV-01 | github, jira, confluence |
+| asset-007 | Legacy Feature Helper | Library | DEV-01 | github, confluence, ims |
+| asset-008 | Dev Workflow Automation Skill | Skill | DEV-02 | github, confluence, jira |
+| asset-009 | Release Task Script | Script | DEV-02 | github, confluence, ims |
+| asset-010 | News Monitoring Agent | Agent | SALES-06 | github, confluence, edm |
+| asset-011 | IR Document Analyzer | Skill | SALES-06 | github, edm, confluence |
+| asset-012 | Market Consensus Analyzer | Tool | SALES-06 | edm, bizforce, confluence |
 
 ## Mock Data가 표현해야 할 판단 차이
 
@@ -124,7 +124,7 @@ mock/
 ├── assets.json         # Normalized Asset 정보
 └── evidence/
     ├── github.json
-    ├── wiki.json
+    ├── confluence.json
     ├── jira.json
     ├── ims.json
     ├── bizforce.json
