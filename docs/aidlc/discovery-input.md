@@ -85,13 +85,13 @@ Need 발생 → 항목 정의 → Data Source 확인 → 기존 Dashboard/Tool �
 Sales / Marketing
 
 **Business Context / Goal**  
-경쟁사 제품 Roadmap, 판매 전망, 시장/고객 동향을 반복적으로 조사·분석하는 업무를 효율화.
+경쟁사 제품 Roadmap, 판매 전망, 시장/고객 동향을 반복적으로 조사·분석하는 업무를 효율화하기 위해 Tool / Agent / Automation을 만들고자 함.
 
 **As-Is Happy Path**  
 범위 정의 → 기존 업무/자료 확인 → Source 수집 → Cross-check → Outlier/Consensus 검증 → Fact/Estimate 구분 → 분석
 
 **Unhappy Path / Risk**  
-완성된 S/W가 없다는 이유로 News 수집, IR 분석, Consensus 등 이미 존재할 수 있는 부분 Capability를 확인하지 않고 전체를 새로 개발할 수 있음.
+경쟁사 센싱용 Tool을 새로 만들기 전에 News 수집, IR 분석, Consensus 비교 등 기존 Capability를 확인하지 않아 이미 존재하는 기능을 중복 개발할 수 있음.
 
 ---
 
