@@ -5,7 +5,7 @@
     "department": "Engineering",
     "permissions": [
       {"source_type": "github", "access": "allowed", "scopes": ["dev-tools/*", "product-a/*"]},
-      {"source_type": "wiki", "access": "allowed", "scopes": ["DEV/*", "ARCH/*"]},
+      {"source_type": "confluence", "access": "allowed", "scopes": ["DEV/*", "ARCH/*"]},
       {"source_type": "jira", "access": "allowed", "scopes": ["DEV", "PRODA"]},
       {"source_type": "ims", "access": "allowed", "scopes": ["PRODA", "PLATFORM"]},
       {"source_type": "bizforce", "access": "denied", "scopes": []},
@@ -18,7 +18,7 @@
     "department": "Sales",
     "permissions": [
       {"source_type": "github", "access": "denied", "scopes": []},
-      {"source_type": "wiki", "access": "allowed", "scopes": ["SALES/*", "COMMON/*"]},
+      {"source_type": "confluence", "access": "allowed", "scopes": ["SALES/*", "COMMON/*"]},
       {"source_type": "jira", "access": "allowed", "scopes": ["SALES"]},
       {"source_type": "ims", "access": "denied", "scopes": []},
       {"source_type": "bizforce", "access": "allowed", "scopes": ["CUSTOMER/*", "FORECAST/*"]},
@@ -31,7 +31,7 @@
     "department": "Market Intelligence",
     "permissions": [
       {"source_type": "github", "access": "allowed", "scopes": ["market-tools/*"]},
-      {"source_type": "wiki", "access": "allowed", "scopes": ["SALES/*", "MARKET/*", "COMMON/*"]},
+      {"source_type": "confluence", "access": "allowed", "scopes": ["SALES/*", "MARKET/*", "COMMON/*"]},
       {"source_type": "jira", "access": "allowed", "scopes": ["SALES", "MARKET"]},
       {"source_type": "ims", "access": "denied", "scopes": []},
       {"source_type": "bizforce", "access": "allowed", "scopes": ["CUSTOMER/*", "FORECAST/*", "MARKET/*"]},
