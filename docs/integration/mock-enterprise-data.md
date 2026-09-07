@@ -23,7 +23,7 @@ Mock은 단순 샘플 데이터가 아니라, 이후 실제 사내 시스템 Ada
 | `bizforce` | Customer, Project, Forecast, Opportunity, 영업 Context |
 | `edm` | 사내 문서, 보고서, 제안서, 시장/제품 분석 자료 |
 
-> Wiki / Confluence 계열 사내 문서 Source는 Mock에서 `confluence`로 통합한다.
+> 사내 문서 Source는 Mock에서 `confluence`로 통합한다.
 
 ## Identity / Permission Context
 
