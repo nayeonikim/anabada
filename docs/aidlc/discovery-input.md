@@ -134,7 +134,7 @@ Sales / Marketing
 - 사용자의 Role뿐 아니라 각 사내 시스템 및 개별 자산/페이지에 대한 기존 접근 권한에 따라 조회 가능한 정보가 달라질 수 있다.
 - Rebuild or Reuse Advisor는 사용자의 기존 권한을 확장하지 않으며, 사용자가 원래 접근할 수 없는 자산이나 Evidence를 검색 결과에 노출하지 않아야 한다.
 - GitHub, Confluence, Jira, IMS, BizForce, EDM 등 각 Source의 기존 접근 권한을 존중하여 검색 및 Evidence를 제공해야 한다.
-- Wiki / Confluence 계열 문서 Source는 Integration 관점에서 `Confluence`로 통합해 취급한다.
+- 사내 문서 Source는 Integration 관점에서 `Confluence`로 통합해 취급한다.
 - 해커톤에서는 실제 SSO 및 사내 권한 시스템 대신 representative mock user / permission context를 사용할 수 있다.
 
 ---
