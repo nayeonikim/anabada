@@ -1,7 +1,7 @@
 # Rebuild or Reuse — AI-DLC Discovery Input
 
 > 해커톤 사전 조사에서 수집한 9개 Use Case 중 중복을 줄이고 서로 다른 재사용 문제를 대표하는 4개 Use Case를 선정한 Discovery 입력 자료.
-> 아래 Use Case / Happy Path는 실제 업무 Context를 전달하기 위한 Evidence이며, 요구사항·MVP는 해커톤 당일 AI-DLC 과정에서 도출한다.
+> 아래 Use Case / Happy Path / Unhappy Path는 실제 업무 Context를 전달하기 위한 Evidence이며, 요구사항과 MVP는 AI-DLC workflow를 통해 도출한다.
 
 ## 1. Project Context
 
@@ -15,7 +15,7 @@ AI 기반 S/W 개발 생산성 향상
 ### Solution Hypothesis
 사용자가 AI로 새로운 S/W를 만들기 전에 Role / Task Context를 이해하고 기존 사내 자산을 탐색·비교하여 재사용 가능성을 판단한다.
 
-### Decision Model
+### Preliminary Decision Model Hypothesis
 - REUSE: 기존 자산을 그대로 활용
 - EXTEND EXISTING: 기존 자산을 기반으로 필요한 부분을 수정/확장
 - DEVELOP: 적절한 기존 자산이 없어 신규 개발
@@ -110,14 +110,12 @@ Sales / Marketing
 
 ## 4. Preliminary Hypotheses — Interpretation, Not Evidence
 
-> 이 섹션은 팀이 수집 자료를 정리하면서 세운 **사전 가설**이다.
-> 위 Use Case / Business Context / As-Is Happy Path / Unhappy Path와 구분하며,
-> AI-DLC에서 사실로 전제하지 않고 검증·수정한다.
+> 이 섹션은 팀이 수집 자료를 정리하면서 세운 사전 가설이다.
+> 위 Use Case / Business Context / As-Is Happy Path / Unhappy Path와 구분하며, AI-DLC에서 사실로 전제하지 않고 검증·수정한다.
 
 - 단순 Retrieval 결과의 유사도와 실제 Reusability는 다를 수 있다.
 - 동일한 자산이라도 Role / Task Context에 따라 재사용 판단이 달라질 수 있다.
 - 완성된 S/W뿐 아니라 Code, API, Script, Agent, Skill, Logic, Capability 등 부분 자산도 재사용 대상이 될 수 있다.
-- Reusability 판단 기준은 사전에 확정하지 않고 실제 Use Case Evidence에서 도출한다.
 
 ---
 
@@ -132,35 +130,13 @@ Sales / Marketing
 
 ---
 
-## 6. AI-DLC Discovery Guidance
+## 6. AI-DLC Input Note
 
-이 문서는 **AI-DLC Intent / Discovery 단계의 입력 Context**이며,
-확정된 Requirement, Priority 또는 MVP 정의서가 아니다.
+이 문서는 해커톤 사전 조사에서 수집한 업무 Context와 Evidence를 제공하기 위한 Discovery 입력 자료이다.
 
-### Evidence
-Primary evidence로 취급:
-- Role
-- Use Case
-- Business Context / Goal
-- As-Is Happy Path
-- Unhappy Path / Risk
-- Other Collected Use Cases
-
-### Hypothesis
-`Project Context`의 Problem / Solution / Target과
-`Preliminary Hypotheses`는 현재 팀의 출발 가설이다.
-Evidence와 비교하여 검증하거나 수정할 수 있다.
-
-### AI-DLC가 수행할 일
-AI-DLC workflow를 통해 Evidence를 분석하고,
-필요한 정보가 부족하거나 모순되면 임의로 가정하지 않고
-Clarification Question을 통해 팀의 Context를 추가로 확보한다.
-
-User Need, Requirements, Priority, MVP는
-이 입력 문서에서 미리 확정하지 않고 이후 AI-DLC 과정에서 도출한다.
-
-### Human Gate
-최종 Requirement 우선순위와 MVP 선택은 팀의 Human Gate로 남긴다.
+- Use Case / Happy Path / Unhappy Path는 실제 조사 Evidence이다.
+- Problem / Solution / Target / Decision Model과 Preliminary Hypotheses는 팀의 현재 가설이다.
+- Requirements와 MVP는 이 문서에서 확정하지 않고 AI-DLC workflow를 통해 도출한다.
 
 ---
 
