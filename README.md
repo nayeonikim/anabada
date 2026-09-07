@@ -73,6 +73,37 @@ Design / Build / Test / Evaluation
 
 Problem / Solution / Target 및 Reusability 관련 사전 생각은 **Hypothesis**로 구분하며, 실제 Use Case Evidence를 기준으로 AI-DLC에서 검증·수정합니다.
 
+### AI-DLC 운영 Prompt
+
+해커톤 당일 stage 간 Context drift와 데이터 불일치를 줄이기 위해 공통 운영 Prompt를 준비합니다.
+
+- `docs/aidlc/start-prompt.md` — AI-DLC workflow 첫 시작 Prompt
+- `docs/aidlc/stage-operation-prompts.md` — Stage 시작/종료 정합성 체크, Human Gate 검토, checkpoint, `/clear` 후 resume, phase 경계 검증 Prompt
+
+권장 흐름:
+
+```text
+Stage 시작
+  ↓
+Kickoff Check
+  ↓
+Stage 작업
+  ↓
+Data / Artifact Consistency Check
+  ↓
+Human Gate 승인
+  ↓
+Checkpoint Check
+  ↓
+필요 시 /clear
+  ↓
+/aidlc 로 state 기반 재개
+  ↓
+Resume Verification
+```
+
+`aidlc-state.md`와 AI-DLC 산출물을 workflow 진행의 Source of Truth로 사용하고, 새 세션에서는 이전 대화 기억보다 state와 artifact를 우선합니다.
+
 ## Enterprise Integration 방향
 
 실제 사내 환경에서는 사용자를 SSO로 인증하고, 각 사내 시스템 및 개별 자산/페이지에 대한 **기존 접근 권한 범위 안에서만** 검색해야 합니다. Advisor는 사용자의 권한을 확장하지 않습니다.
@@ -125,14 +156,15 @@ Asset과 Evidence를 분리함으로써 하나의 Asset을 여러 Source의 근�
 ├── README.md
 ├── docs/
 │   ├── aidlc/
-│   │   ├── discovery-input.md       # AI-DLC Discovery 시작 입력
-│   │   └── start-prompt.md          # AI-DLC 첫 실행 Prompt
+│   │   ├── discovery-input.md        # AI-DLC Discovery 시작 입력
+│   │   ├── start-prompt.md           # AI-DLC 첫 실행 Prompt
+│   │   └── stage-operation-prompts.md# Stage 운영 / 정합성 / resume Prompt
 │   └── integration/
-│       ├── mock-enterprise-data.md  # Mock Enterprise Data 설계
-│       └── asset-adapter-contract.md# Adapter / Asset / Evidence Contract 초안
+│       ├── mock-enterprise-data.md   # Mock Enterprise Data 설계
+│       └── asset-adapter-contract.md # Adapter / Asset / Evidence Contract 초안
 └── mock/
-    ├── users.json                   # Mock SSO user / permission context
-    ├── assets.json                  # Normalized Asset 데이터
+    ├── users.json                    # Mock SSO user / permission context
+    ├── assets.json                   # Normalized Asset 데이터
     └── evidence/
         ├── github.json
         ├── confluence.json
@@ -150,6 +182,7 @@ Asset과 Evidence를 분리함으로써 하나의 Asset을 여러 Source의 근�
 
 - 실제 업무 Use Case / Happy Path 조사 및 통합
 - AI-DLC Discovery Input 및 시작 Prompt 준비
+- AI-DLC Stage 운영 / 정합성 / clear-resume Prompt 준비
 - AI-DLC 로컬 실행 환경 확인
 - SSO / Permission Constraint 정리
 - Mock Identity / Permission Context 준비
