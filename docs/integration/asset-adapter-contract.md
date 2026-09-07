@@ -2,7 +2,7 @@
 
 ## 목적
 
-Rebuild or Reuse Advisor가 해커톤에서는 Mock 데이터를 사용하고, 이후에는 GitHub / Wiki / Jira / IMS / BizForce / EDM 등 실제 사내 Source로 교체할 수 있도록 공통 Integration 경계를 정의한다.
+Rebuild or Reuse Advisor가 해커톤에서는 Mock 데이터를 사용하고, 이후에는 GitHub / Confluence / Jira / IMS / BizForce / EDM 등 실제 사내 Source로 교체할 수 있도록 공통 Integration 경계를 정의한다.
 
 이 문서는 확정 Architecture가 아니라 AI-DLC Design 단계에 제공할 사전 Integration Constraint / Contract 초안이다.
 
@@ -14,7 +14,7 @@ Rebuild or Reuse Advisor가 해커톤에서는 Mock 데이터를 사용하고, �
    - 검색과 Evidence 조회는 현재 사용자가 접근 가능한 범위에서만 수행한다.
 
 2. **Source와 Asset을 분리한다.**
-   - Source는 GitHub, Wiki, Jira, IMS, BizForce, EDM 같은 정보 시스템이다.
+   - Source는 GitHub, Confluence, Jira, IMS, BizForce, EDM 같은 정보 시스템이다.
    - Asset은 Dashboard, API, Repository, Tool, Script, Agent, Skill 등 재사용 판단 대상이다.
 
 3. **Retrieval과 Reuse Decision을 분리한다.**
@@ -41,7 +41,7 @@ IdentityContext
 
 ```text
 SourcePermission
-- source_type: github | wiki | jira | ims | bizforce | edm
+- source_type: github | confluence | jira | ims | bizforce | edm
 - access: allowed | denied
 - scopes: string[]
 ```
@@ -79,7 +79,7 @@ Asset에는 판단 결과를 저장하지 않는다.
 Evidence
 - id: string
 - asset_id: string
-- source_type: github | wiki | jira | ims | bizforce | edm
+- source_type: github | confluence | jira | ims | bizforce | edm
 - source_ref: string
 - evidence_type: string
 - title: string
@@ -94,7 +94,7 @@ Evidence
 | Source | 대표 Evidence Type |
 |---|---|
 | github | repository, implementation, script, package, release |
-| wiki | architecture, design, api_guide, usage_guide, operation_guide |
+| confluence | architecture, design, api_guide, usage_guide, operation_guide |
 | jira | requirement, feature_history, known_limitation, issue |
 | ims | incident, known_problem, operation_risk |
 | bizforce | customer_context, project, forecast, opportunity, data_source |
@@ -150,12 +150,12 @@ REUSE / EXTEND EXISTING / DEVELOP / NEEDS REVIEW
 ## 6. Representative Source Mapping
 
 ```text
-MockGitHubAdapter   -> Future GitHub Adapter
-MockWikiAdapter     -> Future Wiki/Confluence Adapter
-MockJiraAdapter     -> Future Jira Adapter
-MockIMSAdapter      -> Future IMS Adapter
-MockBizForceAdapter -> Future BizForce Adapter
-MockEDMAdapter      -> Future EDM Adapter
+MockGitHubAdapter      -> Future GitHub Adapter
+MockConfluenceAdapter  -> Future Confluence Adapter
+MockJiraAdapter        -> Future Jira Adapter
+MockIMSAdapter         -> Future IMS Adapter
+MockBizForceAdapter    -> Future BizForce Adapter
+MockEDMAdapter         -> Future EDM Adapter
 ```
 
 구체적인 REST Endpoint, 인증 프로토콜, class hierarchy, scoring algorithm은 이 문서에서 확정하지 않고 AI-DLC Design 단계에서 결정한다.
