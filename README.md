@@ -87,7 +87,6 @@ Problem / Solution / Target 및 Reusability 관련 사전 생각은 **Hypothesis
 ├── README.md
 ├── app/                  # MVP application code
 ├── docs/
-│   ├── use-cases/        # Role / Use Case / Happy Path 원자료
 │   ├── aidlc/            # AI-DLC Discovery Input 및 산출물
 │   └── presentation/     # Demo / 발표 자료
 ├── scripts/              # Utility scripts
