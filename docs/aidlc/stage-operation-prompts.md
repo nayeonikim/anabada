@@ -240,14 +240,35 @@ Stage가 길어지거나 Context 사용량이 커질 때 사용한다.
 
 ---
 
+## 11. 구현 전 — Design-First Implementation Guard
+
+구현 또는 코드 변경이 승인된 Design과 어긋나지 않도록 하기 위한 공통 Prompt.
+
+```text
+구현 또는 코드 변경을 시작하기 전에, 해당 변경이 현재 승인된 Requirements와 Design 산출물에 반영되어 있는지 먼저 확인해줘.
+
+구현 중 새로운 설계 결정, Interface 변경, Data Model 변경, 동작 방식 변경이 필요해진 경우:
+1. 먼저 관련 Design 문서를 수정해 변경 내용을 명확히 기록하고,
+2. 기존 Requirements 및 다른 Design 산출물과의 정합성을 확인한 뒤,
+3. 필요한 Human Gate 또는 승인 절차를 거치고,
+4. 승인된 Design을 기준으로 구현을 진행해줘.
+
+코드를 먼저 변경한 뒤 문서를 사후에 맞추는 방식은 피하고, Design artifact를 구현의 Source of Truth로 유지해줘.
+
+단순 버그 수정처럼 기존 Design을 변경하지 않는 경우에는 Design 변경이 불필요한 이유를 확인한 뒤 구현해줘.
+```
+
+---
+
 ## 해커톤 당일 최소 사용 세트
 
-시간이 부족하면 아래 4개만 반복 사용한다.
+시간이 부족하면 아래 5개를 우선 사용한다.
 
 1. **Stage 시작**: `Stage Kickoff Check`
 2. **Stage 종료**: `Data / Artifact Consistency Check`
 3. **승인 후 clear 전**: `Checkpoint Check`
 4. **새 세션 재개**: `/aidlc` 실행 후 `Resume Verification`
+5. **구현 전/변경 시**: `Design-First Implementation Guard`
 
 Mock/Adapter 관련 Stage에서는 `Mock Enterprise Data Consistency Check`를 추가한다.
 
@@ -259,4 +280,5 @@ Mock/Adapter 관련 Stage에서는 `Mock Enterprise Data Consistency Check`를 �
 - `/clear` 전에 승인 결과와 산출물이 파일에 남았는지 확인한다.
 - 새 세션에서는 대화 기억보다 state와 artifact를 우선한다.
 - 데이터 불일치나 상충하는 결정은 AI가 임의로 해석하지 않고 Human Gate로 올린다.
+- 구현은 승인된 Requirements / Design을 기준으로 진행하고, 설계 변경이 필요한 경우 문서와 승인 절차를 먼저 갱신한다.
 - Mock Source는 실제 Enterprise Source를 대표하지만, 최종 Decision 값은 Mock 데이터에 포함하지 않는다.
