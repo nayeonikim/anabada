@@ -105,7 +105,7 @@
 ### US-4.1 후보 랭킹 결과 화면 **[MVP]** · Hero
 - **As a** 사용자, **I want** 후보 자산을 랭킹으로 비교(Source·Reusability Score·후보별 Candidate State)하고, 요청 전체 Overall Decision도 함께 보고 싶다, **so that** 최적 선택을 빠르게 한다. (FR-6, FR-10)
 - **AC**
-  - Given 분류된 후보들, When 결과 화면을 열면, Then Score 순 랭킹으로 Source·자산명·Capability Match·Score·**Candidate State**를 한 화면에 표시한다.
+  - Given 분류된 후보들, When 결과 화면을 열면, Then **Candidate State 우선순위(REUSE > EXTEND EXISTING > NEEDS REVIEW) → Score 내림차순 → 자산명** 순 랭킹으로 Source·자산명·Capability Match·Score·**Candidate State**를 한 화면에 표시한다. (Functional Design U1 Q6=C / Follow-up1=A 반영)
   - Given 결과 화면, Then 요청 전체에 대한 **Overall Decision**(REUSE/EXTEND EXISTING/NEEDS REVIEW/DEVELOP)을 랭킹과 함께 명확히 표시한다.
   - Given 결과 화면, Then Search→Compare→Decide 흐름이 시각적으로 드러난다.
 - **Example (mock)**: Overall = EXTEND EXISTING. 1위 `Forecast 리포트 템플릿`(REUSE, 0.9), 2위 `forecast-gap-lib`(EXTEND EXISTING, 0.8), 3위 `고객대시보드 가이드`(NEEDS REVIEW, 0.4).
