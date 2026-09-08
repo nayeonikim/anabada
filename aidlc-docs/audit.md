@@ -151,3 +151,31 @@
 **Context**: INCEPTION - Units Generation (Part 1 — awaiting answers)
 
 ---
+
+## Units Generation — Answers + Part 2 Complete (Approval Gate)
+**Timestamp**: 2026-09-08T00:00:00Z
+**User Input**: "너무 좋아 전부 권장으로 진행시켜"
+**AI Prompt**: "Units Generation complete. Request Changes / Approve & Continue to CONSTRUCTION PHASE?"
+**AI Response**: Recorded Q1-Q5 answers = all A (recommended) in unit-of-work-plan.md. Analysis: no ambiguity/contradiction, no follow-up needed. Generated 3 artifacts under aidlc-docs/inception/application-design/: unit-of-work.md (U1 Advisor Backend [C1-C10,S1/S2, mock data/adapters inside], U2 Web UI [single-screen]; greenfield code org backend/+frontend/ single repo; loop order U1→U2), unit-of-work-dependency.md (U2→U1 one-way via 3 local HTTP endpoints /intent /advise /feedback; U1 is critical path), unit-of-work-story-map.md (all 13 stories assigned, none unmapped; MVP completion = Hero + 3 unhappy E2E). Awaiting explicit approval before CONSTRUCTION PHASE.
+**Context**: INCEPTION - Units Generation (Part 2 — awaiting approval)
+
+---
+
+## Session Resumed
+**Timestamp**: 2026-09-08T00:00:00Z
+**User Input**: "state를 확인해서 ai-dlc 재개해줘"
+**AI Response**: Read aidlc-state.md and session-continuity rule. Reloaded Units Generation artifacts (unit-of-work.md, unit-of-work-dependency.md, unit-of-work-story-map.md) and unit-of-work-plan.md. Confirmed all Part 1 + Part 2 checkboxes complete; stage is at approval gate before CONSTRUCTION. Re-presenting approval prompt.
+**Context**: INCEPTION - Units Generation (Part 2 — awaiting approval, session resumed)
+
+---
+
+## Units Generation — APPROVED
+**Timestamp**: 2026-09-08T00:00:00Z
+**User Input**: "A 승인"
+**AI Response**: User approved (A). Units Generation complete. INCEPTION PHASE finished. Entering CONSTRUCTION PHASE — per-unit loop starting with U1 (Advisor Backend). First stage: Functional Design for U1.
+**Context**: INCEPTION → CONSTRUCTION transition
+
+## Functional Design (U1) — Part 1 (Plan + Questions Created)
+**Timestamp**: 2026-09-08T00:00:00Z
+**AI Response**: Entered CONSTRUCTION - Functional Design for U1 (Advisor Backend). Created aidlc-docs/construction/plans/u1-advisor-backend-functional-design-plan.md: (Part A) execution checklist + Part 2 artifacts (domain-entities.md, business-logic-model.md, business-rules.md); (Part B) items already fixed by prior stages (pipeline order, states, clarification rule, permission-before-reverify, API endpoints); (Part C) 9 design questions with recommended defaults — Q1 Score scale (0.0-1.0 rec), Q2 Candidate State rule w/ thresholds 0.75/0.5 + evidenceSufficient (rec), Q3 Top-N value (N=3 rec, resolves A-3), Q4 Overall derivation (priority rec), Q5 NEEDS REVIEW representation (evidenceSufficient boolean rec), Q6 ranking tie-break (score desc + name rec), Q7 LLM boundary (real LLM + deterministic fixtures rec), Q8 mock data scenario scope (Hero + 3 unhappy rec), Q9 feedback record shape (rec). Awaiting user answers.
+**Context**: CONSTRUCTION - Functional Design U1 (Part 1 — awaiting answers)
