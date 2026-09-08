@@ -1,0 +1,5 @@
+[
+  {"id":"ims-001","asset_id":"asset-003","source_type":"ims","source_ref":"PLATFORM-INC-2041","evidence_type":"incident","title":"Customer Risk API Bulk Query Latency","summary":"대량 Risk 조회 시 latency 증가와 timeout이 발생한 운영 이력","last_updated":"2026-06-14","access_scope":"PLATFORM","metadata":{"severity":"medium","resolved":true}},
+  {"id":"ims-002","asset_id":"asset-007","source_type":"ims","source_ref":"PRODA-INC-1187","evidence_type":"known_problem","title":"Legacy Feature Helper Runtime Compatibility","summary":"신규 Runtime에서 dependency conflict와 compatibility 문제가 보고됨","last_updated":"2024-03-21","access_scope":"PRODA","metadata":{"severity":"high","resolved":false}},
+  {"id":"ims-003","asset_id":"asset-009","source_type":"ims","source_ref":"PLATFORM-INC-2298","evidence_type":"operation_risk","title":"Release Script Environment Dependency","summary":"예상과 다른 Build Directory에서 Release Script가 Artifact를 찾지 못한 사례","last_updated":"2026-05-08","access_scope":"PLATFORM","metadata":{"severity":"medium","resolved":true}}
+]

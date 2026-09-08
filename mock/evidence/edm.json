@@ -1,0 +1,5 @@
+[
+  {"id":"edm-001","asset_id":"asset-010","source_type":"edm","source_ref":"MARKET/REPORT-NEWS-SENSING-2026Q3","evidence_type":"market_analysis","title":"Competitor News Sensing Report","summary":"News Monitoring Agent를 활용해 작성된 경쟁사 동향 보고서 사례","last_updated":"2026-08-26","access_scope":"MARKET/*","metadata":{"document_type":"report","period":"2026Q3"}},
+  {"id":"edm-002","asset_id":"asset-011","source_type":"edm","source_ref":"IR/DDI-IR-ANALYSIS-2026Q2","evidence_type":"reference_document","title":"DDI Competitor IR Analysis","summary":"IR Document Analyzer로 주요 수치와 Roadmap 정보를 추출한 분석 문서 사례","last_updated":"2026-08-19","access_scope":"IR/*","metadata":{"document_type":"analysis","format":"pdf"}},
+  {"id":"edm-003","asset_id":"asset-012","source_type":"edm","source_ref":"MARKET/DDI-CONSENSUS-2026H2","evidence_type":"market_analysis","title":"DDI Market Consensus Outlook","summary":"복수 조사기관 전망을 비교한 Consensus 및 Outlier 분석 문서","last_updated":"2026-08-28","access_scope":"MARKET/*","metadata":{"document_type":"market_analysis","period":"2026H2"}}
+]

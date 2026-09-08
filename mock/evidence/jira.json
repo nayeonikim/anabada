@@ -1,0 +1,7 @@
+[
+  {"id":"jira-001","asset_id":"asset-001","source_type":"jira","source_ref":"SALES-2841","evidence_type":"feature_history","title":"Customer 360 Risk / Request Enhancement","summary":"Risk와 Customer Request 요약 기능 추가 이력","last_updated":"2026-08-12","access_scope":"SALES","metadata":{"status":"done"}},
+  {"id":"jira-002","asset_id":"asset-004","source_type":"jira","source_ref":"SALES-3012","evidence_type":"feature_history","title":"Request Tracker Owner Workflow","summary":"Owner Assignment 및 Due Date Workflow 개선 이력","last_updated":"2026-08-19","access_scope":"SALES","metadata":{"status":"done"}},
+  {"id":"jira-003","asset_id":"asset-005","source_type":"jira","source_ref":"DEV-4821","evidence_type":"known_limitation","title":"Monorepo Search Coverage Limitation","summary":"대형 Monorepo에서 일부 검색 결과가 누락될 수 있는 제한","last_updated":"2026-08-24","access_scope":"DEV","metadata":{"severity":"medium","status":"open"}},
+  {"id":"jira-004","asset_id":"asset-006","source_type":"jira","source_ref":"DEV-4904","evidence_type":"feature_history","title":"PR Discussion Search Support","summary":"PR Comment 및 변경 이력 검색 지원 추가","last_updated":"2026-08-25","access_scope":"DEV","metadata":{"status":"done"}},
+  {"id":"jira-005","asset_id":"asset-008","source_type":"jira","source_ref":"DEV-5011","evidence_type":"known_limitation","title":"Workflow Automation Skill Pilot Scope","summary":"Skill은 현재 제한된 Pilot Workflow에서만 검증되었으며 범용 사용은 추가 검증 필요","last_updated":"2026-09-01","access_scope":"DEV","metadata":{"severity":"low","status":"open"}}
+]
