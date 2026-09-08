@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-09-08T00:00:00Z
-- **Current Stage**: INCEPTION - Units Generation (in progress)
+- **Current Stage**: CONSTRUCTION - U1 (Advisor Backend) Functional Design — IN PROGRESS
 - **Discovery Input**: docs/aidlc/discovery-input.md (sole Evidence/input source per user constraint)
 
 ## Workspace State
@@ -36,7 +36,7 @@
 - [x] User Stories (APPROVED after revision: stories.md, personas.md)
 - [x] Workflow Planning (APPROVED)
 - [x] Application Design (APPROVED — 5 artifacts)
-- [~] Units Generation — IN PROGRESS (lightweight, 1~2 units)
+- [~] Units Generation — IN PROGRESS (2 units: U1 Advisor Backend, U2 Web UI — awaiting approval)
 
 ### 🟢 CONSTRUCTION PHASE
 - [ ] Functional Design — EXECUTE
