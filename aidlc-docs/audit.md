@@ -192,3 +192,81 @@
 **AI Prompt**: "Functional Design (U1) complete. Request Changes / Continue to Next Stage (NFR Requirements)?"
 **AI Response**: All ambiguities resolved. Updated stories.md US-4.1 AC to State→Score→name ranking (Follow-up1=A). Generated 3 artifacts under aidlc-docs/construction/u1-advisor-backend/functional-design/: domain-entities.md (14 entities incl. VerifiedCandidate w/ evidenceSufficient, ClassificationConfig w/ env-overridable thresholds 0.75/0.50, topN=3, AdviceResult w/ isRecommendation), business-logic-model.md (submitIntent/advise/submitFeedback flows, LLM boundary Q7=A real+fixtures, ASCII data flow), business-rules.md (BR-CLARIFY/PERMISSION/TOPN/SCORE/STATE/OVERALL/RANK/EVIDENCE/FEEDBACK + 9 PBT invariants P1-P9 for C6, FR/story trace). Resolved A-3 (N=3). Awaiting explicit approval before U1 NFR Requirements.
 **Context**: CONSTRUCTION - Functional Design U1 (Part 2 — awaiting approval)
+
+## Units Generation — Correction (US-1.2 U2 ownership)
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "U2의 US-1.2 소유권이 누락되어 있습니다. unit-of-work-story-map.md(line 12)는 US-1.2를 U2의 '구조 표시/확인'으로 매핑하고, stories.md(line 30)도 구조화 결과를 사용자에게 보여주고 확인받아야 한다고 정의합니다. 그런데 unit-of-work.md(line 30)의 U2 담당 스토리와 unit-of-work-story-map.md(line 36)의 MVP 완료 정의에는 US-1.2가 빠져 있습니다."
+**AI Response**: Confirmed inconsistency against stories.md US-1.2 AC (구조화 결과를 사용자에게 표시·확인). Fixed two omissions: (1) unit-of-work.md U2 담당 스토리 목록에 US-1.2(구조 표시/확인 UI) 추가; (2) unit-of-work-story-map.md MVP 완료 정의의 U2 화면 목록을 US-1.1/1.3/... → US-1.1/1.2/1.3/4.1/4.2/4.3으로 갱신. story-map line 12 매핑은 기존에 이미 정확(수정 불필요). Awaiting re-approval of Units Generation.
+**Context**: INCEPTION - Units Generation (correction, awaiting re-approval)
+
+## Units Generation — Re-approval (post US-1.2 correction)
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "응 승인하고 넘어갈게"
+**AI Response**: Units Generation approved after US-1.2 U2 ownership correction. Marked stage [x] APPROVED in aidlc-state.md. Proceeding to CONSTRUCTION - U1 Functional Design review (artifacts already generated, awaiting user approval).
+**Context**: INCEPTION - Units Generation (APPROVED) → CONSTRUCTION - U1 Functional Design
+
+## Functional Design (U1) — Domain Model Reconciliation with Mock (Minimal 정합)
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "domain 모델이 현재 mock 데이터와 맞지않는 것 같은데, mock을 수정해야할지, domain model을 수정해야할지 우리의 이전 결정판단 근거들로 검토해줘." + AskUserQuestion 응답 "Minimal 정합"
+**AI Response**: mock-enterprise-data.md / asset-adapter-contract.md / discovery-input.md / components.md 대조. 3 불일치 판정: (1) 권한 모델 source-level(mock 초안) vs per-asset(domain) → A-2(Application Design Q4=A) 근거로 domain 유지·mock을 per-asset로 수정(초안 예시 superseded); (2) Asset↔Source 단일 vs 다중 Evidence → domain 수정(Evidence 엔티티 누락은 US-4.2·'유사≠재사용' 훼손); (3) Asset 구조화 필드 붕괴 → domain 수정. 사용자 'Minimal 정합' 선택. 개정 실행: domain-entities.md(Evidence 엔티티 2.3b 추가, Asset에 type/capabilities/lifecycleStatus/constraints/evidenceRefs 추가·단일 source 제거, Candidate를 asset 단위+evidence[]·sources[]·구조화필드, RankedCandidate source→sources[], EvidenceChain evidenceItems를 EvidenceItem[]로, AssetType 열거 추가); business-logic-model.md(search가 Evidence→asset 단위 집계, reverify가 구조화 필드·evidence 근거, EvidenceBuilder가 Evidence 레코드에서 구성); business-rules.md(BR-EVIDENCE 다중 Source Evidence 투영, BR-PERMISSION asset 단위·Evidence 상속, BR-SCORE 구조화 입력 명시). 권한 규칙(BR-PERMISSION 판정식)·임계값·랭킹·Overall 규칙은 불변. mock JSON은 아직 미생성 — Code Gen에서 per-asset+Asset/Evidence 구조로 작성 예정.
+**Context**: CONSTRUCTION - Functional Design U1 (Request Changes 반영 — 재검토 대기)
+
+## Functional Design (U1) — Unauthorized-Asset Non-Disclosure Fix (FR-8/NFR-4)
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "권한 필터의 상세 제외 목록은 서버 내부에서만 사용한다. 공개 API 응답에는 미인가 자산의 ID·이름·링크·요약·rawMeta·Evidence를 포함하지 않는다. UI에는 '접근 권한이 있는 자산만 표시됩니다'라는 일반 안내만 표시하려고 생각했었어. 근데 지금은 미인가 자산에 대한 상세 정보를 공개 응답으로 넘기는 것 같아."
+**AI Response**: Confirmed leak — AdviceResult.excluded(ExcludedCandidate[] with full Candidate: id/name/evidence/summary) was in the public response, violating FR-8/NFR-4. Fixed: (1) domain-entities.md 2.6 ExcludedCandidate marked server-internal only (audit/log), never serialized; (2) 2.12 AdviceResult: removed `excluded`, added boolean `accessFilterApplied` (no count, no detail) driving generic UI notice "접근 권한이 있는 자산만 표시됩니다"; (3) business-logic-model.md step7: accessFilterApplied=(excluded.length>0), excluded 상세는 서버 내부 로그에만; (4) business-rules.md BR-PERMISSION: added 공개 응답 미노출 규칙(id/name/link/summary/rawMeta/Evidence + 제외 개수 미노출) + overallRationale 가드(미인가 자산명 미포함). Permission decision logic·thresholds·ranking·overall rules unchanged.
+**Context**: CONSTRUCTION - Functional Design U1 (Request Changes 반영 — 재검토 대기)
+
+## Functional Design (U1) — Drop accessFilterApplied Flag & UI Notice
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "아. 근데 생각해보니 권한 필터링이 기본 동작이기 때문에 UI 에 별도 안내하는게 불필요한거 같아. 그래서 1) 상세 제외 목록은 서버 내부에서만 사용. 2) 공개 응답에서 excluded 제거 이 내용만 반영 되는게 맞는거 같아."
+**AI Response**: Removed accessFilterApplied boolean and the generic UI notice entirely. Final rule: (1) ExcludedCandidate = server-internal only (log/audit); (2) AdviceResult public response contains NO exclusion info at all (no detail, no flag, no count). Updated domain-entities.md 2.6 note + 2.12 (removed accessFilterApplied row/note), business-logic-model.md step7 (removed flag line, excluded stays internal), business-rules.md BR-PERMISSION (no flag/no UI notice). overallRationale guard retained.
+**Context**: CONSTRUCTION - Functional Design U1 (Request Changes 반영 — 재검토 대기)
+
+## Functional Design (U1) — APPROVED
+**Timestamp**: 2026-09-09T00:00:00Z
+**AI Prompt**: "Functional Design (U1) complete. Request Changes / Continue to Next Stage (NFR Requirements)?"
+**User Input**: "승인할게"
+**AI Response**: U1 Functional Design approved (incl. domain-Mock Minimal 정합 + Evidence 엔티티 + unauthorized-asset non-disclosure fixes + stale excluded 설명 정리). Marked stage [x] in aidlc-state.md. Proceeding to CONSTRUCTION - U1 NFR Requirements.
+**Context**: CONSTRUCTION - Functional Design U1 (APPROVED) → NFR Requirements U1
+
+## NFR Requirements (U1) — Part 1 (Plan + Questions Created)
+**Timestamp**: 2026-09-09T00:00:00Z
+**AI Response**: Entered CONSTRUCTION - NFR Requirements for U1. Loaded Functional Design + requirements.md(NFR-1~7) + extension config(Security=No/Resiliency=No/PBT=Partial). Created aidlc-docs/construction/plans/u1-advisor-backend-nfr-requirements-plan.md: Part A checklist, Part B 확정사항(파이프라인/임계값/LLM 경계/권한 미노출/확장/Infra SKIP), Part C 8 questions w/ recommended defaults — Q1 언어(Python rec), Q2 API 프레임워크(FastAPI rec), Q3 LLM 제공자(Bedrock Claude rec), Q4 PBT(Hypothesis rec), Q5 저장(JSON+in-memory rec), Q6 성능(no hard SLA/best-effort rec), Q7 토큰 가드(구조적 가드만 rec), Q8 로깅(구조화 로그+제외 감사 rec). Awaiting user answers.
+**Context**: CONSTRUCTION - NFR Requirements U1 (Part 1 — awaiting answers)
+
+## Session Resume
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "state를 확인하고 aidlc 를 재개해줘"
+**AI Response**: Read aidlc-state.md → Current Stage = CONSTRUCTION - U1 NFR Requirements IN PROGRESS. Loaded session-continuity + nfr-requirements rules + U1 functional design context + existing NFR Requirements plan (Part C Q1~Q8, all [Answer]: tags empty). Presenting welcome-back status; next step = collect user answers to Q1~Q8 in u1-advisor-backend-nfr-requirements-plan.md.
+**Context**: Session resume → CONSTRUCTION - NFR Requirements U1 (awaiting answers)
+
+## NFR Requirements (U1) — Answers + Part 2 (Artifacts Generated)
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "모두 권장안대로 하되, Q5는 mock은 JSON 로드 후 메모리 보관, 피드백은 JSONL 파일에 기록하여 재시작 후에도 유지한다. Q7에서 fixture는 명시적인 데모 모드로 구분한다."
+**AI Response**: Recorded Q1~Q8 in plan ([Answer] tags): Q1=A Python3.11+, Q2=A FastAPI, Q3=A Bedrock Claude, Q4=A Hypothesis, Q5=A(보강) mock=JSON→in-memory(read-only)/feedback=JSONL append-only(영속·재시작 유지), Q6=A no hard SLA(best-effort), Q7=A(보강) 구조적 가드 + fixture는 명시적 demoMode(env)로 분기(ON=fixture 결정적·LLM 미호출/OFF=실제 호출; Top-N·프롬프트 간결화 공통), Q8=A 구조화 로그+내부 제외 감사. 모호성 없음 → 후속 질문 불필요. Generated artifacts: nfr-requirements.md(NFR-P/S/A/SEC/T/M/C/U 그룹 + 측정·검증 방법 + 매핑), tech-stack-decisions.md(D1~D8 결정+근거+스택 스냅샷+확장 컴플라이언스). Plan checklist 전 항목 [x]. Awaiting approval.
+**Context**: CONSTRUCTION - NFR Requirements U1 (Part 2 — artifacts generated, awaiting approval)
+
+## NFR Requirements (U1) — Request Changes: Top-N 조정 가능성 명시
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "NFR-P3에서 TOP-N을 상한으로 두는것은 데모 목적이나, 이후 n값은 수정가능하도록 둔다."
+**AI Response**: Clarified Top-N is a demo-purpose default (N=3) and MUST remain adjustable, not hardcoded. Updated: (1) nfr-requirements.md NFR-P3 — "N=3은 데모용 기본값이며 이후 조정 가능", topN 하드코딩 금지·config/env(TOP_N) override, 검증에 하드코딩 부재 리뷰 추가; (2) NFR-C1 — "Top-N 상한(데모 기본=3, config로 조정 가능)"; (3) tech-stack-decisions.md D7 + 스택 스냅샷 config — TOP_N override 명시. Thresholds/other decisions unchanged. Awaiting approval.
+**Context**: CONSTRUCTION - NFR Requirements U1 (Request Changes 반영 — 재검토 대기)
+
+## NFR Requirements (U1) — APPROVED
+**Timestamp**: 2026-09-09T00:00:00Z
+**AI Prompt**: "NFR Requirements (U1) complete. Request Changes / Continue to Next Stage (NFR Design)?"
+**User Input**: "승인하고 넘어갈게"
+**AI Response**: U1 NFR Requirements approved (nfr-requirements.md + tech-stack-decisions.md, incl. Top-N config 조정 가능 반영). Marked NFR Requirements [x] in aidlc-state.md, set NFR Design [~] IN PROGRESS. Proceeding to CONSTRUCTION - U1 NFR Design.
+**Context**: CONSTRUCTION - NFR Requirements U1 (APPROVED) → NFR Design U1
+
+## NFR Design (U1) — Part 1 (Plan + Questions Created)
+**Timestamp**: 2026-09-09T00:00:00Z
+**AI Response**: Entered CONSTRUCTION - NFR Design for U1. Loaded nfr-requirements.md + tech-stack-decisions.md + business-logic-model.md(S1 + C1~C8 + SourceAdapterRegistry). Created aidlc-docs/construction/plans/u1-advisor-backend-nfr-design-plan.md: Part A checklist, Part B 확정사항, Part C 5 questions covering all mandated categories — Q1 Resilience(LLM 실패 처리: 후보 강등 no-retry rec), Q2 Performance(재검증 캐싱: none rec), Q3 Security(미인가 비노출: 공개 DTO 분리+초기 단일 필터 이중방어 rec), Q4 Scalability(Adapter 등록: config-driven registry rec), Q5 Logical Components(최소 구성 rec). Awaiting user answers.
+**Context**: CONSTRUCTION - NFR Design U1 (Part 1 — awaiting answers)
+
+## NFR Design (U1) — Answers + Part 2 (Artifacts Generated)
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "Q1=C — A 기반 보완. 재시도 없이 처리하고 타임아웃은 config로 관리한다. demoMode OFF에서는 실패 시 fixture로 폴백하지 않는다. C1 실패는 명확한 오류 응답을 반환한다. C5 일부 실패는 해당 후보를 NEEDS_REVIEW로 처리하되, 기술적 실패를 재사용 부적합으로 간주하여 Overall=DEVELOP을 산출하지 않는다. C5 전체 실패는 명확한 오류 응답을 반환한다. demoMode ON에서는 대표 시나리오에 fixture를 사용하며, 매칭되지 않는 입력은 명시적 오류로 처리한다.\n나머지는 전부 권장대로 진행"
+**AI Response**: Recorded Q1=C(A 기반 보완) + Q2~Q5=A in plan. Q1 실패 처리: no-retry+config timeout; demoMode OFF 폴백 없음; C1 실패→오류 응답; C5 일부 실패→후보 NEEDS_REVIEW(stateReason=TECHNICAL_FAILURE)이되 Overall=DEVELOP 산출 금지(기술실패≠재사용부적합); C5 전체 실패→오류 응답; demoMode ON→대표 fixture, 미매칭 입력 명시적 오류. Q2=A no caching, Q3=A 공개 DTO 분리+초기 단일 필터(이중방어), Q4=A config-driven registry, Q5=A 최소 구성. 모호성 없음. Generated: nfr-design-patterns.md(Resilience/Performance/Security/Scalability/Testability 패턴 + Technical-Failure NEEDS_REVIEW 구분 1.3 + NFR 매핑 + Code Gen follow-up: BR-OVERALL 정제/stateReason 도입), logical-components.md(API DTO 경계·S1·C1~C8·인프라 최소구성 8종·협력 흐름·교체 경계). Plan checklist 전 [x]. Awaiting approval.
+**Context**: CONSTRUCTION - NFR Design U1 (Part 2 — artifacts generated, awaiting approval)
