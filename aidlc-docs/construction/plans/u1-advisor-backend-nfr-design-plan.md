@@ -46,7 +46,14 @@ B) 경량 재시도 — 실패 시 1회 짧은 백오프 재시도 후 그래도
 
 C) Other (please describe after [Answer]: tag below)
 
-[Answer]: C (A 기반 보완) — 재시도 없음, 타임아웃은 config 관리. **demoMode OFF**: 실패 시 fixture 폴백 안 함. C1(structure) 실패 → 명확한 오류 응답. C5(reverify) **일부 실패** → 해당 후보 NEEDS_REVIEW 처리하되 **기술적 실패를 재사용 부적합으로 간주하지 않음(Overall=DEVELOP 산출 금지)**. C5 **전체 실패** → 명확한 오류 응답. **demoMode ON**: 대표 시나리오는 fixture, 매칭 안 되는 입력은 명시적 오류.
+[Answer]: C (A 기반 보완 — 확정 계약)
+- 재시도 없음, LLM 타임아웃은 config 관리. demoMode OFF: 실제 호출 실패 시 fixture 폴백 없음. demoMode ON: 대표 시나리오 fixture, 미매칭 입력은 명시적 오류.
+- **C1 실패**: 명확한 오류 응답으로 요청 종료.
+- **C5 일부 실패**: 정상 응답에 후보 포함하되 `evaluationStatus`로 구분 — COMPLETED(score∈[0,1], 기존 State 규칙; 근거부족 NEEDS_REVIEW도 COMPLETED) vs UNAVAILABLE(score=null, state=NEEDS_REVIEW). 공개 사유는 일반적 '평가 미완료'만; TECHNICAL_FAILURE·내부 예외는 서버 내부.
+- **랭킹**: 평가 실패 후보는 점수 비교 제외, 완료 후보 뒤 정렬. 완료 후보는 State→Score→name 유지, 실패 후보끼리는 name→candidateId.
+- **Overall**: 정상 REUSE/EXTEND 있으면 완료 후보만으로 기존 규칙; REUSE/EXTEND 없고 실패 후보 있으면 NEEDS_REVIEW; 일부 실패 시 overallRationale에 일반적 제한 문구; 기술 실패로 DEVELOP 산출 금지.
+- **C5 전체 실패**(대상 ≥1 전부): AdviceResult 대신 비정상 HTTP + 공통 오류 `{error:{code,message,requestId}}`(내부 예외 문자열 미포함, HTTP↔code 매핑 설계 산출물에 정의). 검색 0/접근가능 0은 평가 실패 아님 → 기존 정상 DEVELOP 경로 유지.
+- 설계 정합성: 후보 모델·공개 DTO·Overall/랭킹 규칙·PBT 불변식(P5 등) 변경을 산출물에 명시. UI 문구/표시는 추후. 현 단계는 백엔드 응답 계약만 확정. (Q1만 보완, 나머지 권장)
 
 ## Question 2 (Performance — 재검증 캐싱 패턴, NFR-P2/C1)
 동일 자산·의도에 대한 LLM 재검증 결과를 캐싱할까요?

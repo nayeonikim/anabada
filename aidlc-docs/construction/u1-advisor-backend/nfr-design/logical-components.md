@@ -42,8 +42,11 @@
 
 ### 2.1 API Layer (FastAPI)
 - **책임**: `/intent`, `/advise`, `/feedback` 엔드포인트. 요청 검증(Pydantic), 도메인 호출, **공개 응답 DTO로 매핑·직렬화**.
-- **NFR**: NFR-M1(자동 OpenAPI 문서), NFR-U1(계약 명확성), NFR-SEC2(응답 DTO 경계로 비노출 강제).
-- **핵심**: 공개 Response DTO는 내부 타입(ExcludedCandidate/제외 개수/플래그)을 **필드로 갖지 않음**.
+- **NFR**: NFR-M1(자동 OpenAPI 문서), NFR-U1(계약 명확성), NFR-SEC2(응답 DTO 경계로 비노출 강제), NFR-A2(오류 응답 매핑).
+- **핵심**:
+  - 공개 Response DTO는 내부 타입(ExcludedCandidate/제외 개수/플래그, LLM 내부 예외·기술 사유)을 **필드로 갖지 않음**.
+  - 공개 RankedCandidate DTO는 `evaluationStatus` + nullable `reusabilityScore`를 노출(평가 완료/점수 부재 구분).
+  - 치명 오류(C1 실패, C5 전체 실패, demoMode 미매칭, 빈 입력)는 공통 오류 DTO `{error:{code,message,requestId}}`로 매핑(nfr-design-patterns §1.6 HTTP↔code).
 
 ### 2.2 S1 AdvisorOrchestratorService
 - **책임**: submitIntent / advise / submitFeedback 흐름의 동기 순차 오케스트레이션(business-logic-model 3장).
@@ -66,18 +69,20 @@
 - **NFR**: NFR-P3(Bounded Fan-out).
 
 ### 2.7 ReVerificationComponent (LLM)
-- **책임**: Top-N 후보를 LLM 재검증 → reusabilityScore/reasoning/roleTaskContextNote/evidenceSufficient.
-- **실패 처리(NFR-A2)**: 일부 후보 실패 → 해당 후보 `NEEDS_REVIEW(stateReason=TECHNICAL_FAILURE)`; 전체 실패 → 오류 응답.
+- **책임**: Top-N 후보를 LLM 재검증 → 후보별 `evaluationStatus` + (COMPLETED 시)reusabilityScore/reasoning/roleTaskContextNote/evidenceSufficient.
+- **실패 처리(NFR-A2, nfr-design-patterns §1.3~1.6)**:
+  - 일부 실패 → 해당 후보 `evaluationStatus=UNAVAILABLE`, `reusabilityScore=null`, 내부 사유(TECHNICAL_FAILURE/예외)는 서버 내부 보관.
+  - 전체 실패(대상 ≥1) → 공통 오류 응답(§1.6 매핑, 502 `REVERIFICATION_UNAVAILABLE`).
 - **의존**: LLMClient. **NFR**: NFR-A2, NFR-C1.
 
 ### 2.8 DecisionClassifierComponent (순수 로직, PBT)
-- **책임**: classifyAll(verified) → CandidateState(+stateReason), deriveOverall → OverallDecision.
-- **핵심 규칙**: TECHNICAL_FAILURE NEEDS_REVIEW는 **DEVELOP 신호로 사용 안 함**(nfr-design-patterns 1.3).
-- **NFR**: NFR-T1/T2(순수·결정적·PBT), NFR-A2.
+- **책임**: classifyAll(verified) → CandidateState(UNAVAILABLE→NEEDS_REVIEW; COMPLETED→BR-STATE), deriveOverall → OverallDecision.
+- **핵심 규칙**: **COMPLETED 후보만**으로 REUSE/EXTEND 판정. UNAVAILABLE만 존재 시 Overall=NEEDS_REVIEW(**DEVELOP 금지**). 랭킹은 UNAVAILABLE을 완료 후보 뒤(name→candidateId)로 정렬.
+- **NFR**: NFR-T1/T2(순수·결정적·PBT; P5 랭킹·Overall 불변식 갱신), NFR-A2.
 
 ### 2.9 EvidenceBuilderComponent
-- **책임**: 접근 가능 후보의 Evidence[] → EvidenceChain. NEEDS_REVIEW는 stateRationale에 사유 포함(기술 실패/근거 부족 구분).
-- **NFR**: FR-7, NFR-SEC3(미인가 근거 미포함).
+- **책임**: 접근 가능 후보의 Evidence[] → EvidenceChain. NEEDS_REVIEW 후보: 근거 부족(COMPLETED)은 사유 노출, 평가 미완료(UNAVAILABLE)는 **일반적 '평가 미완료' 문구만**(내부 기술 사유 비노출).
+- **NFR**: FR-7, NFR-SEC3(미인가·내부 기술 사유 미포함).
 
 ### 2.10 C8 FeedbackComponent
 - **책임**: (resultId, candidateId, verdict) 기록 → FeedbackStore append, 확인 id 반환.
@@ -109,10 +114,11 @@ API(request DTO) → S1.advise
   → AssetSearch(Registry→Adapters→Repository)         : Candidate[]
   → PermissionFilter(ctx)                             : accessible / excluded(내부, 감사 로그)
   → CandidateSelection(topN)                          : Top-N
-  → ReVerification(LLMClient|Fixture)                 : Verified[] (실패→NEEDS_REVIEW/TECHNICAL_FAILURE or 오류)
-  → DecisionClassifier(순수)                           : states(+reason) + Overall(기술실패↛DEVELOP)
-  → EvidenceBuilder                                   : EvidenceChain[]
-  → S1 assemble → 공개 Response DTO (excluded 미포함)   : AdviceResult
+  → ReVerification(LLMClient|Fixture)                 : Verified[] (일부실패→evaluationStatus=UNAVAILABLE/score=null; 전체실패→공통 오류)
+  → DecisionClassifier(순수)                           : states(COMPLETED만 REUSE/EXTEND) + Overall(UNAVAILABLE만→NEEDS_REVIEW, 기술실패↛DEVELOP)
+  → EvidenceBuilder                                   : EvidenceChain[] (UNAVAILABLE은 일반 '평가 미완료'만)
+  → S1 assemble → 공개 Response DTO (excluded·내부 기술사유 미포함, evaluationStatus 노출) : AdviceResult
+       (랭킹: COMPLETED[State→Score→name] → UNAVAILABLE[name→candidateId])
 StructuredLogger: 전 단계 요청ID·소요·제외 감사(내부)
 ```
 
