@@ -17,7 +17,9 @@
 - 둘 다 불충족 → 접근 불가 → ExcludedCandidate(reason=`NOT_ACCESSIBLE`)로 분리.
 - **적용 시점**: LLM 재검증 **이전** (비용 낭비·오추천 방지).
 - **권한 확장 금지**: 규칙에 명시되지 않은 접근을 임의 허용하지 않음.
-- **Evidence 노출**: 접근 불가 자산의 Evidence는 결과에서 제외(EvidenceChain에 미포함).
+- **Evidence 노출**: 접근 불가 자산의 Evidence는 결과에서 제외(EvidenceChain에 미포함). 권한 판정은 **Asset 단위**이며 Evidence는 소속 Asset의 접근성을 상속(Source-level 권한 레이어 없음, A-2).
+- **공개 응답 미노출 (FR-8/NFR-4)**: 권한 필터링은 기본 동작이므로, 공개 API 응답에는 제외 관련 정보를 **일절 포함하지 않는다** — 미인가 자산의 id·name·link·summary·rawMeta·Evidence는 물론 제외 **플래그·개수**도 미노출. 제외 상세(ExcludedCandidate)는 **서버 내부 로그/감사 전용**. 별도 UI 안내도 두지 않는다.
+- **overallRationale 가드**: Overall 근거 서술에도 미인가 자산명/식별정보를 포함하지 않는다(접근 가능 후보 기준으로만 서술).
 
 ## BR-TOPN — 후보 선별 (C4) · US-2.2 / A-3 확정
 - **N = 3** (config.topN, Q3=A). 접근 가능 후보를 **relevance 내림차순** 상위 3개 선별.
@@ -28,6 +30,7 @@
 - reusabilityScore ∈ **[0.0, 1.0]** 실수(소수 둘째 자리 권장).
 - relevance(검색 관련도)와 **구분**: relevance는 선별용, reusabilityScore는 재검증 판정용.
 - reasoning에 **Role/Task 맥락 반영을 명시**(US-3.1 AC), "단순 유사 ≠ 재사용성" 반영.
+- **판단 입력(구조화)**: 후보의 `capabilities`·`lifecycleStatus`·`constraints` + 다중 Source `evidence`를 근거로 사용. deprecated/상충 constraints/Known Limitation 등 부정 신호는 `evidenceSufficient=false`로 이어질 수 있음(BR-STATE P2와 연계).
 
 ## BR-STATE — 후보 State 판정 (C6, 순수 로직) · US-3.2/3.3
 설정: `reuseThreshold`(기본 0.75), `extendThreshold`(기본 0.50) — **환경변수로 override 가능(Q2=D)**.
@@ -64,9 +67,9 @@ else:                                          → NEEDS_REVIEW
 - rank는 1-based로 부여. (스토리 US-4.1 AC 갱신 완료: State→Score→name)
 
 ## BR-EVIDENCE — Evidence chain (C7) · US-4.2 / FR-7
-- 후보별 {source, assetLink, evidenceItems[], stateRationale} 구성.
-- **접근 가능한 Evidence 항목만** 포함(FR-8 연계).
-- 모든 추천은 추적 가능한 Evidence 보유(Black-box 금지, NFR-1).
+- 후보별 {candidateId, evidenceItems[], stateRationale} 구성. evidenceItems는 후보 Asset의 실제 **Evidence 레코드**에서 투영: `{source, evidenceType, title, sourceRef}` (다중 Source).
+- **접근 가능한 Asset의 Evidence만** 포함(FR-8 연계). per-asset 권한(A-2)이므로 접근 가능 후보는 그 Asset의 전 Evidence를 노출, 접근 불가 Asset은 후보/Evidence 모두 제외.
+- 모든 추천은 추적 가능한 Evidence 보유(Black-box 금지, NFR-1) — 자유 텍스트가 아니라 Source별 Evidence 항목으로 근거화.
 
 ## BR-FEEDBACK — 피드백 (C8) · US-4.3 [MVP]
 - 기록: `{resultId, candidateId, verdict∈{useful,notFit}, timestamp}` append.

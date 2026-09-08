@@ -27,7 +27,7 @@
 
 - **책임**: 단일 화면(NFR-6)에서 Search → Compare → Decide → Evidence 흐름 전달. 자연어 Intent 입력, 구조화 결과/명료화 질문 표시·응답, 후보 랭킹(Source·Score·Candidate State)·Overall Decision·Evidence chain 비교, 피드백 입력.
 - **의존**: U1의 HTTP API 3개에만 의존 (내부 파이프라인 은닉).
-- **담당 스토리**: US-1.1(입력 UI), US-1.3(명료화 UI), US-4.1(랭킹 화면), US-4.2(Evidence 표시), US-4.3(피드백 UI).
+- **담당 스토리**: US-1.1(입력 UI), US-1.2(구조 표시/확인 UI), US-1.3(명료화 UI), US-4.1(랭킹 화면), US-4.2(Evidence 표시), US-4.3(피드백 UI).
 - **테스트 초점**: 대표 mock 시나리오 렌더링(Hero + 3 Unhappy) 시각 확인.
 
 ---

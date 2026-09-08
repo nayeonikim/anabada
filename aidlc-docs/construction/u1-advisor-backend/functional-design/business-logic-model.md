@@ -38,9 +38,10 @@
 IN: approvedIntent(StructuredIntent), ctx(PermissionContext)
 
 1) AssetSearchComponent.search(intent)
-     - SourceAdapterRegistry.getAll() 순회 → 각 Adapter.search(intent) → Candidate[] 병합
-     - 각 Candidate에 relevance(0~1) 부여 (keyword/summary 매칭 기반)
-     → allCandidates: Candidate[]
+     - SourceAdapterRegistry.getAll() 순회 → 각 Adapter.search(intent) → Evidence[] 반환(Source별)
+     - Evidence를 assetId로 묶어 **asset 단위 Candidate**로 집계 (한 Asset이 다중 Source Evidence 보유)
+     - 각 Candidate에 relevance(0~1) 부여 (keyword/summary/capabilities 매칭 기반)
+     → allCandidates: Candidate[] (각 후보는 evidence[]·sources[]·capabilities·lifecycleStatus·constraints 동반)
 
 2) PermissionFilterComponent.filter(allCandidates, ctx)
      - 각 후보 Asset에 대해 isAccessible(asset, ctx):
@@ -56,9 +57,10 @@ IN: approvedIntent(StructuredIntent), ctx(PermissionContext)
      → topN: Candidate[]
 
 4) ReVerificationComponent.reverify(topN, intent)   (LLM)
-     - 각 후보에 reusabilityScore(0~1), reasoning, roleTaskContextNote,
-       evidenceSufficient(+insufficiencyReason?) 부여
+     - 후보의 capabilities/lifecycleStatus/constraints + 다중 Source evidence[]를 근거로
+       reusabilityScore(0~1), reasoning, roleTaskContextNote, evidenceSufficient(+insufficiencyReason?) 부여
      - "단순 유사 ≠ 재사용성" → Role/Task 맥락을 reasoning에 명시
+     - deprecated 상태·상충 constraints·Known Limitation 등 부정 신호 → evidenceSufficient=false 근거로 반영
      → verified: VerifiedCandidate[]   (accessible 0개면 [])
 
 5) DecisionClassifierComponent (순수 로직, PBT 대상)
@@ -66,15 +68,18 @@ IN: approvedIntent(StructuredIntent), ctx(PermissionContext)
      - deriveOverall(states, verified, hasAnyAccessible) → OverallDecision  (BR-OVERALL)
 
 6) EvidenceBuilderComponent.build(verified, states, ctx)
-     - 후보별 EvidenceChain 구성 (접근 가능 Evidence만 노출)
+     - 후보별 EvidenceChain 구성: Candidate.evidence[] → EvidenceItem[]{source, evidenceType, title, sourceRef}
+       (접근 가능 Asset의 Evidence만 노출; per-asset 권한이므로 접근 가능 후보의 전 Evidence 노출)
      - NEEDS_REVIEW 후보는 stateRationale에 insufficiencyReason 포함
      → evidenceChains: EvidenceChain[]
 
 7) 조립 (S1)
      - ranking = sort(verified+states) by BR-RANK (State→Score→name), rank 부여 → RankedCandidate[]
      - capabilityMatch = reasoning 요약(intent.function 대비 적합 서술)
+     - excluded 상세(ExcludedCandidate[])는 **서버 내부 로그/감사에만 기록**, 응답에 미포함 (FR-8/NFR-4)
+       (권한 필터링은 기본 동작이므로 제외 플래그·개수도 응답에 두지 않음)
      - AdviceResult{ resultId, ranking, overallDecision, overallRationale,
-                     isRecommendation=true, evidenceChains, excluded } 반환
+                     isRecommendation=true, evidenceChains } 반환 (공개 응답)
 ```
 
 ### 데이터 흐름 요약 (ASCII)
