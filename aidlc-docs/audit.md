@@ -179,3 +179,16 @@
 **Timestamp**: 2026-09-08T00:00:00Z
 **AI Response**: Entered CONSTRUCTION - Functional Design for U1 (Advisor Backend). Created aidlc-docs/construction/plans/u1-advisor-backend-functional-design-plan.md: (Part A) execution checklist + Part 2 artifacts (domain-entities.md, business-logic-model.md, business-rules.md); (Part B) items already fixed by prior stages (pipeline order, states, clarification rule, permission-before-reverify, API endpoints); (Part C) 9 design questions with recommended defaults — Q1 Score scale (0.0-1.0 rec), Q2 Candidate State rule w/ thresholds 0.75/0.5 + evidenceSufficient (rec), Q3 Top-N value (N=3 rec, resolves A-3), Q4 Overall derivation (priority rec), Q5 NEEDS REVIEW representation (evidenceSufficient boolean rec), Q6 ranking tie-break (score desc + name rec), Q7 LLM boundary (real LLM + deterministic fixtures rec), Q8 mock data scenario scope (Hero + 3 unhappy rec), Q9 feedback record shape (rec). Awaiting user answers.
 **Context**: CONSTRUCTION - Functional Design U1 (Part 1 — awaiting answers)
+
+## Functional Design (U1) — Answers Received + Follow-up Raised
+**Timestamp**: 2026-09-08T00:00:00Z
+**User Input**: "답변 완료했어." (plan file Q1-Q9: Q1=A, Q2=D [A방향, 임계값 env 변수화], Q3=A [N=3], Q4=B [최고 Score 후보 State 승격, 최종 판단은 사용자 명시], Q5=A, Q6=C [State→Score→assetName], Q7=A, Q8=A, Q9=A)
+**AI Response**: Analyzed answers. Found (1) contradiction: Q6=C (state-first ranking) conflicts with US-4.1 AC ('Score 순 랭킹'); per aidlc-state policy stories.md is authoritative on divergence. (2) Q4=B needs precise scope definition for '최고 Score 후보' + DEVELOP condition. Created aidlc-docs/construction/plans/u1-functional-design-followup.md with 2 follow-up questions. Other answers accepted as-is. Awaiting follow-up answers before generating Part 2 artifacts.
+**Context**: CONSTRUCTION - Functional Design U1 (Part 1 — follow-up clarification pending)
+
+## Functional Design (U1) — Follow-up Answered + Part 2 Complete (Approval Gate)
+**Timestamp**: 2026-09-08T00:00:00Z
+**User Input**: "완료" (followup file: Follow-up1=A [Q6=C 유지, US-4.1 AC 갱신], Follow-up2=A [Overall 결정적 규칙 확정])
+**AI Prompt**: "Functional Design (U1) complete. Request Changes / Continue to Next Stage (NFR Requirements)?"
+**AI Response**: All ambiguities resolved. Updated stories.md US-4.1 AC to State→Score→name ranking (Follow-up1=A). Generated 3 artifacts under aidlc-docs/construction/u1-advisor-backend/functional-design/: domain-entities.md (14 entities incl. VerifiedCandidate w/ evidenceSufficient, ClassificationConfig w/ env-overridable thresholds 0.75/0.50, topN=3, AdviceResult w/ isRecommendation), business-logic-model.md (submitIntent/advise/submitFeedback flows, LLM boundary Q7=A real+fixtures, ASCII data flow), business-rules.md (BR-CLARIFY/PERMISSION/TOPN/SCORE/STATE/OVERALL/RANK/EVIDENCE/FEEDBACK + 9 PBT invariants P1-P9 for C6, FR/story trace). Resolved A-3 (N=3). Awaiting explicit approval before U1 NFR Requirements.
+**Context**: CONSTRUCTION - Functional Design U1 (Part 2 — awaiting approval)

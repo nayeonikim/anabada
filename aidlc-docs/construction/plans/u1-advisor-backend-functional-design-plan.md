@@ -12,14 +12,15 @@
 ### Plan (Part 1)
 - [x] 컨텍스트 분석 (application-design + requirements + stories) — 완료
 - [x] 설계 결정 질문 작성 (Part C) — 완료
-- [ ] 사용자 답변 수집 (Q1~Q9 `[Answer]:` 태그 작성)
-- [ ] 답변 분석 (모호/모순 확인), 필요 시 후속 질문
+- [x] 사용자 답변 수집 (Q1~Q9 `[Answer]:` 태그 작성)
+- [x] 답변 분석 (모호/모순 확인), 필요 시 후속 질문 — 후속 2건 발견 (u1-functional-design-followup.md)
 
 ### Generation (Part 2) — 승인 후 생성할 산출물
-- [ ] `construction/u1-advisor-backend/functional-design/domain-entities.md` — 도메인 엔티티 + 관계 + 필드 상세
-- [ ] `construction/u1-advisor-backend/functional-design/business-logic-model.md` — 파이프라인 단계별 알고리즘/데이터 흐름
-- [ ] `construction/u1-advisor-backend/functional-design/business-rules.md` — 판정 룰(Candidate State/Overall), 권한 필터, Top-N, 명료화, PBT 불변식
-- [ ] 유닛 경계 검증(U1 API 3개), 담당 스토리(US-1.1~4.3 백엔드) 커버리지 검증
+- [x] `construction/u1-advisor-backend/functional-design/domain-entities.md` — 도메인 엔티티 + 관계 + 필드 상세
+- [x] `construction/u1-advisor-backend/functional-design/business-logic-model.md` — 파이프라인 단계별 알고리즘/데이터 흐름
+- [x] `construction/u1-advisor-backend/functional-design/business-rules.md` — 판정 룰(Candidate State/Overall), 권한 필터, Top-N, 명료화, PBT 불변식
+- [x] 유닛 경계 검증(U1 API 3개), 담당 스토리(US-1.1~4.3 백엔드) 커버리지 검증
+- [x] US-4.1 AC 갱신(stories.md) — 랭킹 정렬 State→Score→name (Follow-up1=A)
 
 ---
 

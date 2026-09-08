@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-09-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - U1 (Advisor Backend) Functional Design — IN PROGRESS
+- **Current Stage**: CONSTRUCTION - U1 (Advisor Backend) Functional Design (artifacts generated — awaiting approval) → next: U1 NFR Requirements
 - **Discovery Input**: docs/aidlc/discovery-input.md (sole Evidence/input source per user constraint)
 
 ## Workspace State
@@ -51,5 +51,7 @@
 
 ## Open Decisions (carried forward)
 - **A-2**: 권한별 Source 노출 세부 정책 → **RESOLVED (Application Design Q4=A)**: per-asset 권한 모델(allowedRoles/allowedUsers), Source-level 정책 레이어 없음.
-- **A-3**: Top-N의 N 구체값(기본 3~5) → Functional Design에서 확정.
+- **A-3**: Top-N의 N 구체값 → **RESOLVED (U1 Functional Design Q3=A)**: N=3 (config.topN, env override 가능).
 - **Consistency C-1/C-2**: requirements.md 미수정(User 결정 C). 분기 시 stories.md가 authoritative.
+- **US-4.1 AC 갱신**: 랭킹 정렬 State→Score→name (U1 Functional Design Follow-up1=A로 stories.md 갱신 완료).
+- **State 임계값(Q2=D)**: reuseThreshold=0.75 / extendThreshold=0.50 기본, 환경변수 override → NFR/Code Gen에서 config 노출.
