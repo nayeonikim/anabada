@@ -79,3 +79,75 @@
 **Context**: INCEPTION - User Stories (Part 2 revision → re-approval)
 
 ---
+
+## User Stories — Approved (after revision) + Consistency Check Requested
+**Timestamp**: 2026-09-08T00:00:00Z
+**User Input**: "승인. Workflow Planning 단계 진행 전에 문서 정합성을 체크해줘. audit이 우리의 판단 근거야."
+**AI Response**: User Stories approved after revision. Marked User Stories complete in aidlc-state.md. Before starting Workflow Planning, running a document consistency check across all INCEPTION artifacts (discovery-input.md, requirements.md, requirement-verification-questions.md, stories.md, personas.md, plans, aidlc-state.md) using audit.md decisions as the source of truth. Will report findings and get confirmation before proceeding to Workflow Planning.
+**Context**: INCEPTION - User Stories (APPROVED) → Consistency Check before Workflow Planning
+
+---
+
+## Consistency Check — Findings & User Decision
+**Timestamp**: 2026-09-08T00:00:00Z
+**User Input**: "C" (option C: proceed to Workflow Planning WITHOUT editing docs; inconsistencies acknowledged and left as-is)
+**AI Response**: Reported consistency check across discovery-input.md / requirements.md / requirement-verification-questions.md / stories.md / personas.md / plans, using audit.md as source of truth. Findings: [HIGH C-1] requirements.md §8 flow + FR-4 still place Permission Filter AFTER LLM re-verification/Decision, contradicting the approved stories.md revision (검색 → 권한 필터 → Top-N → 재검증). [HIGH C-2] requirements.md FR-5/FR-6 assign all 4 Decision States (incl. DEVELOP) per-candidate, contradicting the approved split (Candidate State = REUSE/EXTEND/NEEDS REVIEW; Overall Decision adds DEVELOP). Note: C-2 does NOT violate discovery's fixed 4-state Product Decision (it refines applicability unit only). [LOW C-3] FR-2 ambiguity trigger less explicit than US-1.3 (missing required field). [LOW C-4] FR-9 feedback vs US-4.3/US-5.1 MVP/Later split. [LOW C-5] personas.md US-5.1 mapping label slightly stale after rescope. Confirmed-consistent: Extension config, persona equality/common flow, web UI interpretation (A-1), 6-source mock + mock permission context. Open decision carried forward: A-2 (per-source permission exposure policy) to be decided in Workflow Planning. USER DECISION: proceed to Workflow Planning without doc sync (C-1..C-5 left unresolved by user choice). stories.md remains the authoritative model where it diverges from requirements.md.
+**Context**: INCEPTION - Consistency Check (decision C) → proceeding to Workflow Planning
+
+---
+
+## Session Resume — Workflow Planning Approval Gate
+**Timestamp**: 2026-09-08T00:00:00Z
+**User Input**: "state참고해서 ai-dlc 재개해줘"
+**AI Response**: Resumed session. Read aidlc-state.md (Current Stage: INCEPTION - Workflow Planning, execution-plan.md created — awaiting approval) and loaded prior artifacts context (requirements, stories, personas, execution-plan.md). Presenting the completed execution plan for approval per workflow-planning.md Step 9. Awaiting user decision (Approve & Continue → Application Design / Request Changes / Add Skipped Stages).
+**Context**: INCEPTION - Workflow Planning (awaiting approval)
+
+---
+
+## Workflow Planning — Approval
+**Timestamp**: 2026-09-08T00:00:00Z
+**AI Prompt**: "Approve & Continue → Application Design / Request Changes / Add Skipped Stages?"
+**User Response**: "승인 후 다음 단계 진행."
+**Status**: Approved
+**Context**: INCEPTION - Workflow Planning APPROVED (execution plan: 8 stages execute, Infra Design + RE skip; A-2 per-asset permission model recommended). Proceeding to Application Design.
+
+---
+
+## Application Design — Part 1 (Plan + Questions Created)
+**Timestamp**: 2026-09-08T00:00:00Z
+**AI Response**: Entered Application Design. Loaded requirements.md + stories.md. Created aidlc-docs/inception/plans/application-design-plan.md containing: (Part A) proposed component breakdown of the Hero pipeline into 8 components (IntentStructuring, AssetSearch + SourceAdapter/Registry, PermissionFilter, CandidateSelection, ReVerification, DecisionClassifier, EvidenceBuilder, Feedback) + AdvisorOrchestratorService; (Part B) execution checklist incl. mandatory artifacts (components.md, component-methods.md, services.md, component-dependency.md, application-design.md); (Part C) 6 design-decision questions with recommended defaults — Q1 component grouping, Q2 re-verification vs classifier separation, Q3 SourceAdapter interface shape (NFR-3), Q4 permission-model unit (A-2 open decision: per-asset recommended), Q5 inter-component communication pattern, Q6 UI↔backend interface boundary. Awaiting user to fill [Answer]: tags.
+**Context**: INCEPTION - Application Design (Part 1 — awaiting answers)
+
+---
+
+## Application Design — Answers Received & Analyzed
+**Timestamp**: 2026-09-08T00:00:00Z
+**User Input**: "반영완료" (application-design-plan.md의 6개 질문 모두 답변 A + 근거 기입)
+**AI Response**: Read application-design-plan.md answers. All 6 = A: Q1 per-stage components + single Orchestrator; Q2 keep ReVerification (LLM) and DecisionClassifier (pure logic, PBT target) separate; Q3 common SourceAdapter interface + Registry with 6 mock adapters over shared dataset; Q4 per-asset permission model (allowedRoles/allowedUsers) — resolves open decision A-2; Q5 synchronous sequential in-process pipeline; Q6 few logical endpoints (submit/structure intent, advise, feedback) with Orchestrator owning internal steps. Analysis (Step 8): no vague/contradictory/ambiguous answers — rationales consistent with each other and with MVP/6h constraints. No follow-up questions needed. Proceeding to Part 2 (generate design artifacts).
+**Context**: INCEPTION - Application Design (Part 2 — generating artifacts)
+
+---
+
+## Application Design — Part 2 Complete (Approval Gate)
+**Timestamp**: 2026-09-08T00:00:00Z
+**AI Prompt**: "Application Design complete. Request Changes / Add Units Generation / Approve & Continue to Units Generation?"
+**AI Response**: Generated 5 artifacts under aidlc-docs/inception/application-design/: components.md (C1-C10 defs+responsibilities+interfaces), component-methods.md (method signatures + concept types + Orchestrator endpoints), services.md (S1 AdvisorOrchestratorService advise() sequence with permission-filter-before-reverify, S2 SourceAdapterRegistry), component-dependency.md (dependency matrix + ASCII data flow + Mermaid comm diagram + text alternative), application-design.md (consolidated: decisions Q1-Q6, arch overview, requirement coverage, carry-forwards). Resolved open decision A-2 (per-asset permission model). Design follows stories.md as authoritative on C-1/C-2. Awaiting explicit approval before Units Generation.
+**Context**: INCEPTION - Application Design (Part 2 — awaiting approval)
+
+---
+
+## Application Design — Approval
+**Timestamp**: 2026-09-08T00:00:00Z
+**AI Prompt**: "Approve & Continue to Units Generation?"
+**User Response**: "승인"
+**Status**: Approved
+**Context**: INCEPTION - Application Design APPROVED. Proceeding to Units Generation (lightweight, 1-2 units per execution-plan).
+
+---
+
+## Units Generation — Part 1 (Plan + Questions Created)
+**Timestamp**: 2026-09-08T00:00:00Z
+**AI Response**: Entered Units Generation. Created aidlc-docs/inception/plans/unit-of-work-plan.md: (Part A) proposed 2-unit decomposition — U1 Advisor Backend (C1-C10, S1/S2, backend logic + LLM + mock data) and U2 Web UI (single-screen: intent input, ranking/overall/evidence, feedback), with story boundary notes; (Part B) execution checklist incl. mandatory artifacts (unit-of-work.md with greenfield code org, unit-of-work-dependency.md, unit-of-work-story-map.md); (Part C) 5 decomposition questions with recommended defaults — Q1 unit count/boundary (2 units rec), Q2 inter-unit integration (local HTTP API rec), Q3 per-unit loop order (backend-first rec), Q4 greenfield code org (backend/+frontend/ rec), Q5 mock data/adapter placement (inside U1 rec). Awaiting user answers.
+**Context**: INCEPTION - Units Generation (Part 1 — awaiting answers)
+
+---
