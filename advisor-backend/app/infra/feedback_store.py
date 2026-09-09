@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import json
+import threading
 from pathlib import Path
 
 from app.domain.models import Feedback, FeedbackVerdict
@@ -15,6 +16,7 @@ class FeedbackStore:
     def __init__(self, path: Path):
         self._path = Path(path)
         self._records: list[Feedback] = []
+        self._lock = threading.Lock()
         self._load()
 
     def _load(self) -> None:
@@ -35,7 +37,6 @@ class FeedbackStore:
             )
 
     def append(self, feedback: Feedback) -> None:
-        self._records.append(feedback)
         self._path.parent.mkdir(parents=True, exist_ok=True)
         record = {
             "resultId": feedback.result_id,
@@ -43,8 +44,12 @@ class FeedbackStore:
             "verdict": feedback.verdict.value,
             "timestamp": feedback.timestamp.isoformat(),
         }
-        with self._path.open("a", encoding="utf-8") as f:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        # 동시 append 시 in-memory/파일 쓰기 인터리브·유실 방지 (F-06).
+        with self._lock:
+            self._records.append(feedback)
+            with self._path.open("a", encoding="utf-8") as f:
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
     def all(self) -> list[Feedback]:
-        return list(self._records)
+        with self._lock:
+            return list(self._records)

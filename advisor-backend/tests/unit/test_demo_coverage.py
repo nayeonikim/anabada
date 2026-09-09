@@ -36,6 +36,28 @@ CFG = ClassificationConfig(0.75, 0.50, 3)
 
 _STRUCTURE_KEYS = list(_FIXTURES["structure"].keys())
 
+# 데모에서 사용자가 선택할 수 있는 모든 역할의 합집합:
+# mock/users.json의 역할 ∪ assets.json의 allowedRoles.
+# 기본(시나리오) 역할이 아닌 다른 역할을 선택하면 권한 필터가 다른 자산을 노출하므로
+# (F-01), 모든 역할 조합의 Top-N이 reverify fixture로 커버돼야 /advise가 422로 깨지지 않는다.
+_MOCK_ROOT = Path(__file__).resolve().parent.parent.parent.parent / "mock"
+_USERS = json.loads((_MOCK_ROOT / "users.json").read_text(encoding="utf-8"))
+_ASSETS = json.loads((_DATA / "assets.json").read_text(encoding="utf-8"))
+_ROLES = sorted(
+    {u["role"] for u in _USERS}
+    | {r for a in _ASSETS for r in a.get("allowedRoles", [])}
+)
+
+# advise 대상(role/function 비어있지 않은) structure 시나리오 × 모든 역할 조합
+_ADVISE_STRUCTURE_KEYS = [
+    k
+    for k, v in _FIXTURES["structure"].items()
+    if (v.get("role") or "") and (v.get("function") or "")
+]
+_SCENARIO_ROLE_PARAMS = [
+    (raw, role) for raw in _ADVISE_STRUCTURE_KEYS for role in _ROLES
+]
+
 
 @pytest.fixture
 def orchestrator(registry, repository, tmp_path) -> AdvisorOrchestratorService:
@@ -100,6 +122,35 @@ def test_top_n_candidates_are_covered_by_reverify_fixture(
     assert not missing, (
         f"시나리오 '{intent.function}'의 Top-N 후보 {sorted(missing)}가 "
         f"reverify fixture에 없음 → /advise가 422로 깨진다"
+    )
+
+
+# ── 회귀 가드 2b: 역할 무관 Top-N ⊆ reverify fixture (F-01 방어) ─────
+# 시나리오 기본 역할뿐 아니라 사용자가 선택 가능한 모든 역할에 대해,
+# 권한 필터가 노출하는 Top-N 후보가 reverify fixture로 100% 커버됨을 검증한다.
+# 어떤 (function, role) 조합에서든 fixture 공백이 생기면 /advise가 422로 깨진다.
+@pytest.mark.parametrize("raw_text,role", _SCENARIO_ROLE_PARAMS)
+def test_top_n_covered_by_reverify_for_every_role(
+    raw_text, role, registry, repository
+):
+    struct = _FIXTURES["structure"][raw_text]
+    intent = _intent_from_structure(struct)
+
+    search = AssetSearchComponent(registry, repository)
+    pfilter = PermissionFilterComponent(repository)
+    selection = CandidateSelectionComponent()
+
+    accessible = pfilter.filter(
+        search.search(intent), PermissionContext("coverage-probe", role)
+    ).accessible
+    top_n = selection.select_top_n(accessible, CFG.top_n)
+
+    covered = set(_FIXTURES["reverify"].get(intent.function, {}).keys())
+    selected = {c.id for c in top_n}
+    missing = selected - covered
+    assert missing == set(), (
+        f"시나리오 '{intent.function}' × role='{role}'의 Top-N 후보 "
+        f"{sorted(missing)}가 reverify fixture에 없음 → 해당 역할로 /advise 시 422로 깨진다"
     )
 
 
