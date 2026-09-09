@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 # ── /intent ──────────────────────────────────────────────────────
@@ -86,9 +86,18 @@ class AdviceResponse(BaseModel):
 
 # ── /feedback ────────────────────────────────────────────────────
 class FeedbackRequest(BaseModel):
-    resultId: str
-    candidateId: str
+    resultId: str = Field(..., min_length=1)
+    candidateId: str = Field(..., min_length=1)
     verdict: Literal["useful", "notFit"]
+
+    @field_validator("resultId", "candidateId")
+    @classmethod
+    def _reject_blank(cls, v: str) -> str:
+        """공백만 있는 값 거부 → pydantic이 HTTP 422 반환 (입력 하드닝)."""
+        stripped = v.strip()
+        if not stripped:
+            raise ValueError("must not be empty or whitespace-only")
+        return stripped
 
 
 class FeedbackResponse(BaseModel):
