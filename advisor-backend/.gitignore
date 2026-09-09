@@ -21,3 +21,6 @@ env/
 htmlcov/
 .mypy_cache/
 .ruff_cache/
+
+# Runtime data (feedback append log — regenerated at runtime)
+data/feedback.jsonl
