@@ -47,16 +47,22 @@ export default function IntentPanel({
 
       <div className="field-row">
         <div className="field">
-          <label className="field-label">사용자 ID</label>
+          <label className="field-label" htmlFor="ctx-userId">
+            사용자 ID
+          </label>
           <input
+            id="ctx-userId"
             className="input"
             value={context.userId}
             onChange={(e) => onContextChange({ ...context, userId: e.target.value })}
           />
         </div>
         <div className="field">
-          <label className="field-label">역할</label>
+          <label className="field-label" htmlFor="ctx-role">
+            역할
+          </label>
           <select
+            id="ctx-role"
             className="select"
             value={context.role}
             onChange={(e) => onContextChange({ ...context, role: e.target.value })}
@@ -71,8 +77,11 @@ export default function IntentPanel({
       </div>
 
       <div className="field">
-        <label className="field-label">자연어 요청</label>
+        <label className="field-label" htmlFor="raw-text">
+          자연어 요청
+        </label>
         <textarea
+          id="raw-text"
           className="textarea"
           value={rawText}
           onChange={(e) => onRawTextChange(e.target.value)}
@@ -86,15 +95,20 @@ export default function IntentPanel({
           className="btn btn--primary"
           onClick={onSubmitIntent}
           disabled={intentLoading}
+          aria-busy={intentLoading}
         >
           {intentLoading ? '구조화 중…' : '구조화하기'}
         </button>
       </div>
 
-      {error && <div className="alert alert--error">{error}</div>}
+      {error && (
+        <div className="alert alert--error" role="alert">
+          {error}
+        </div>
+      )}
 
       {clarification && (
-        <div className="clarify">
+        <div className="clarify" role="status">
           <p>요청 정보가 부족합니다. 아래를 보완해 다시 제출하세요.</p>
           {clarification.missingFields.length > 0 && (
             <p className="panel-hint">누락된 항목: {clarification.missingFields.join(', ')}</p>
@@ -112,8 +126,11 @@ export default function IntentPanel({
           <h3 className="panel-title">구조화된 의도</h3>
           {FIELD_LABELS.map(({ key, label }) => (
             <div className="field" key={key}>
-              <label className="field-label">{label}</label>
+              <label className="field-label" htmlFor={`intent-${key}`}>
+                {label}
+              </label>
               <input
+                id={`intent-${key}`}
                 className="input"
                 value={intent[key]}
                 onChange={(e) => onIntentFieldChange(key, e.target.value)}
@@ -126,6 +143,7 @@ export default function IntentPanel({
               className="btn btn--primary"
               onClick={onAdvise}
               disabled={!canAdvise || adviseLoading}
+              aria-busy={adviseLoading}
             >
               {adviseLoading ? '자문 실행 중…' : '검색 · 자문 실행'}
             </button>
