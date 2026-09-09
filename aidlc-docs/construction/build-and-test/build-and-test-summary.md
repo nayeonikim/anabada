@@ -72,3 +72,27 @@
 - (전부 통과) **Operations 단계(배포 계획)로 진행 가능** — 제품 전체(U1+U2).
 - 데모 시연 시: `integration-test-instructions.md` Part B + `e2e-test-instructions.md`의 4 시나리오를 브라우저에서 순차 확인.
 - 실 LLM/성능 검증은 `DEMO_MODE=false` + 용량 계획으로 Operations에서 다룸.
+
+---
+
+## CR-001 U2 Action Handoff (증분) — Build & Test 결과 (2026-09-09)
+
+> 범위: US-6.2 Action Handoff 표시·Copy(`✨ 추천 프롬프트` 탭). U1 backend(actionHandoff 계약)는 CR-001 U1 Build & Test에서 기검증(72/2/0). 본 증분은 **U2 소비 + 제품 전체 회귀**를 병렬 검증.
+> 실행 방식: **병렬 2스트림**(백엔드 pytest / 프론트 build) 동시 실행 + 앞선 `/run` 브라우저 E2E.
+> 커밋: `368e9a2` (integration/action-handoff-on-main).
+
+### Build Status
+- **U1**: `pytest` 대상 트리 임포트/조립 정상(테스트 수집 74건). ✅ Success
+- **U2**: `npm run build` = `tsc --noEmit`(strict) **0 오류** → `vite build` **41 modules**(40→+1 ActionHandoffTab), `dist/`(js 160.61KB / gzip 52.31KB, css 13.52KB), built 642ms. ✅ Success
+
+### Test Execution Summary
+- **Unit / Regression (U1)**: `pytest tests/` → **72 passed / 2 skipped / 0 failed** (4.40s). **회귀 0**. actionHandoff 계약 테스트(PBT INV-HANDOFF-1/2/5 + 예제 INV-HANDOFF-3/4·최소 유용성·demoMode) 포함, 비차단(실패→`actionHandoff=null`, Decision/Evidence/랭킹 유지) 유지. (2 skipped·2 warnings는 기존 환경 항목, 신규 아님.)
+- **Component/Type (U2)**: `tsc --noEmit`(strict) 0 오류 = 정적 게이트 통과. AC 10항목 스모크(Decision 4종 배지·Copy 성공/실패·Q-TARGET 조건부·Q-NULL 탭 내부 안내·Q-LABEL 라벨/CTA 금지·키보드 a11y·모바일 ≤720·NFR-8 3필드·NFR-min 의존성 0) 전부 ✅.
+- **E2E (실 브라우저, /run)**: 워크트리 백엔드:8000 + Vite:5175, Hero 흐름 → 네트워크 **200 `/intent`·`/advise`·`/feedback`**, `✨ 추천 프롬프트` 탭 렌더·`REUSE` 배지·`대상 자산: Customer 360 Dashboard`·702자 4섹션 프롬프트·**복사→"복사됨"**(role=status)·후보 Top3·피드백 기록됨 전부 PASS. 스크린샷 시각 확인. ✅
+- **Contract (U1↔U2)**: 라이브 `/advise` → `actionHandoff` camelCase 3키(`decisionState`/`promptText`/`targetAssetNames[]`)만, 내부/미인가 필드 비노출. U2 `types.ts` 1:1 미러. ✅
+
+### Overall Status
+- **Build**: ✅ Success (U1 수집 + U2 tsc/vite 통과)
+- **All Tests**: ✅ Pass (U1 72/2/0 회귀 0 · U2 strict 0 + AC 10/10 · E2E 200×3 · 계약 PASS)
+- **Ready for Operations**: ✅ Yes (CR-001 Action Handoff 포함 제품 전체)
+- **신규 config/flag/의존성/테스트 프레임워크**: 0 (NFR-minimization 준수)

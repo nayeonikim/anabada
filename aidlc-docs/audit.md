@@ -734,3 +734,38 @@ Q9=B (데스크톱 전용)
 **Context**: CONSTRUCTION - U2 Code Generation(증분) Part 2 완료·검증 PASS·스테이지 승인 게이트
 
 ---
+
+## CR-001 U2 Code Generation(증분) — workflow 재개 + 스테이지 완료 게이트(2옵션) 제시
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "현재 state확인하고 workflow 재개해줘"
+**AI Response**: state·audit 확인 → 재개 지점 = **U2 Code Generation(증분) 스테이지 완료 게이트**(Part 2 구현·검증·커밋 `368e9a2` 완료, 게이트 미제시). code-generation.md Step 14 표준 형식으로 완료 메시지 제시: 생성물(신규 `frontend/src/components/ActionHandoffTab.tsx` / 수정 `types.ts`·`VerdictBanner.tsx`·`App.tsx`·`styles.css` / 문서 code-summary), 검증(tsc strict 0 + vite build 41 modules + AC 10항목 스모크 PASS·블로킹 0), 비회귀(API/DTO/기존 흐름 무영향). 표준 2옵션(🔧 Request Changes / ✅ Continue to Next Stage → Build & Test) 게이트 제시. 승인 대기.
+**Context**: CONSTRUCTION - U2 Code Generation(증분) 스테이지 완료 게이트 제시(승인 대기)
+
+---
+
+## CR-001 U2 — /run 데모 E2E 검증(브라우저)
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: (/run 스킬 실행)
+**AI Response**: 워크트리(`integration/action-handoff-on-main`)에서 백엔드 `:8000` + Vite `:5175` 기동(5173/5174 타 세션 점유 → 자동 대체). 백엔드 직접 `/advise` → `actionHandoff={decisionState:REUSE, targetAssetNames:["Customer 360 Dashboard"], promptText 702자}` camelCase 3키. Playwright Hero 흐름(clipboard 권한 부여): 네트워크 200 `/intent`·`/advise`·`/feedback`, `✨ 추천 프롬프트` 탭 렌더·REUSE 배지·대상 자산 표시·4섹션 프롬프트·**복사→"복사됨"**(role=status)·후보 Top3·피드백 기록됨 전부 PASS. 스크린샷 시각 확인 후 서버 종료·`feedback.jsonl`/스크린샷/드라이버 정리(타 세션 미영향).
+**Context**: CONSTRUCTION - /run 데모 검증(US-6.2 실앱 동작 확인)
+
+---
+
+## CR-001 U2 Code Generation(증분) — 스테이지 APPROVED + Build & Test(병렬) 착수
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "승인하고 진행. Build & Test는 병렬로 진행할 수 있다면 병렬로 해줘."
+**AI Response**: U2 Code Generation(증분·US-6.2) 스테이지 **APPROVED**(Continue to Next Stage). state 갱신(스테이지 완료). **Build & Test 진입** — CR-001 U2 증분 검증을 병렬 실행: 스트림 A(백엔드 회귀 `pytest tests/` → 72/2/0 + actionHandoff 계약 + 비차단 null 유지), 스트림 B(프론트 `npm run build` = tsc strict + vite build 41 modules). 결과를 `build-and-test-summary.md`에 반영 후 표준 게이트 제시 예정.
+**Context**: CONSTRUCTION - U2 Code Generation APPROVED · Build & Test 병렬 착수
+
+---
+
+## Build and Test Stage — CR-001 U2 (증분) 결과
+**Timestamp**: 2026-09-09T00:00:00Z
+**Build Status**: Success (U1 수집 74 / U2 tsc strict 0 + vite 41 modules)
+**Test Status**: Pass
+**AI Response**: 병렬 2스트림(background) 동시 실행 완료 — 스트림 A(백엔드): `.venv` `pytest tests/` = **72 passed / 2 skipped / 0 failed** (4.40s), 회귀 0, actionHandoff 계약(PBT INV-HANDOFF-1/2/5 + 예제 3/4·최소유용성·demoMode) + 비차단(실패→null, Decision/Evidence/랭킹 유지) 포함. 스트림 B(프론트): `npm run build` = tsc --noEmit strict 0 오류 → vite build **41 modules**, dist(js 160.61KB/gzip 52.31KB, css 13.52KB) 642ms. + 앞선 /run 브라우저 E2E(200 `/intent`·`/advise`·`/feedback`, 탭·배지·대상자산·복사→"복사됨") + 라이브 계약(camelCase 3키·비노출) PASS. `build-and-test-summary.md`에 CR-001 U2 증분 섹션 추가. 신규 config/의존성/테스트 프레임워크 0(NFR-min). **Ready for Operations: Yes**.
+**Files Generated**:
+- build-and-test-summary.md (CR-001 U2 증분 섹션 append)
+**Context**: CONSTRUCTION - Build and Test(CR-001 U2 증분) 완료 · Operations 진행 게이트(승인 대기)
+
+---
