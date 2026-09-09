@@ -29,8 +29,24 @@ uvicorn app.main:app --reload --port 8000
 | Method | Path | 설명 |
 |---|---|---|
 | POST | `/intent` | rawText → StructuredIntent 또는 ClarificationRequest |
-| POST | `/advise` | 승인된 intent + PermissionContext → AdviceResult(랭킹·권고·Evidence) |
+| POST | `/advise` | 승인된 intent + PermissionContext → AdviceResult(랭킹·권고·Evidence·`actionHandoff`) |
 | POST | `/feedback` | (resultId, candidateId, verdict) 기록 → 확인 id |
+
+#### `/advise` 응답의 `actionHandoff` (CR-001 Action Handoff)
+
+`AdviceResult`에 **`actionHandoff`**(nullable) 필드가 추가된다. Decision·Evidence를 근거로 외부 AI 개발
+도구에 붙여 쓸 **실행 Prompt**를 생성하며, 결과 화면에서 표시·Copy 대상이 된다(표시·Copy UI는 U2 범위).
+
+```jsonc
+"actionHandoff": {                 // 생성 실패/부재 시 null (비차단 — 핵심 결과는 200 정상)
+  "decisionState": "REUSE",        // == overallDecision
+  "promptText": "…",               // 목표·근거·다음 작업·확인 사항을 담은 자연어 실행 Prompt
+  "targetAssetNames": ["…"]        // REUSE/EXTEND_EXISTING만 대상 Asset명, DEVELOP/NEEDS_REVIEW는 []
+}
+```
+
+생성 실패(LLM 오류/타임아웃 등)는 오류가 아니라 `actionHandoff: null`로 처리되며, 랭킹·권고·Evidence 등
+나머지 결과는 그대로 유지된다. 미인가 자산명·내부 기술사유는 구조적으로 미노출.
 
 ## 환경 변수 (`.env.example` 참조)
 | 변수 | 기본값 | 설명 |
@@ -49,6 +65,9 @@ uvicorn app.main:app --reload --port 8000
 - **ON**: `data/demo_fixtures.json`의 결정적 응답만 사용. 대표 시나리오(Hero + 3 Unhappy)
   재현. 미매칭 입력은 폴백하지 않고 `422 DEMO_FIXTURE_NOT_FOUND` 오류.
 - **OFF**: 실제 Amazon Bedrock Claude 호출(AWS 자격증명 필요). fixture 폴백 없음.
+- **`actionHandoff` 재현(CR-001)**: demoMode ON에서는 `demo_fixtures.json`의 `actionHandoff` 섹션이
+  결정적 `promptText`를 제공한다. 대표 시나리오: `customer overview dashboard`=REUSE(대상 Asset 지정),
+  `legacy common utilities`=NEEDS_REVIEW, `release version checklist automation script`=DEVELOP.
 
 대표 데모 입력(demoMode ON):
 - Hero(REUSE): "고객의 Project, Forecast, Risk, 요청사항을 한 화면에서 조회하는 대시보드를 만들고 싶어요" (role=Sales)

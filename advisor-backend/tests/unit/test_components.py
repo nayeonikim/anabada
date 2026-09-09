@@ -120,6 +120,9 @@ class _AllFailLLM(LLMClient):
     def reverify(self, intent, candidate):  # noqa: D102
         raise RuntimeError("boom")
 
+    def generate_action_prompt(self, req):  # noqa: D102 - C5 테스트에서 미사용
+        raise RuntimeError("n/a")
+
 
 def test_reverify_all_fail_raises(registry, repository):
     c2 = AssetSearchComponent(registry, repository)
@@ -142,6 +145,9 @@ class _PartialFailLLM(LLMClient):
         if candidate.id.endswith("1"):
             raise RuntimeError("boom")
         return ReverifyOutcome(0.9, "r", "n", True, None)
+
+    def generate_action_prompt(self, req):  # noqa: D102 - C5 테스트에서 미사용
+        raise RuntimeError("n/a")
 
 
 def test_reverify_partial_fail_degrades():

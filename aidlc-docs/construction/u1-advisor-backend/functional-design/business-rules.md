@@ -3,6 +3,7 @@
 > CONSTRUCTION - Functional Design (U1). 판정/필터/정렬 규칙 + PBT 불변식.
 > 결정 근거: Q1~Q9 + Follow-up1(A)/Follow-up2(A). C6 규칙은 순수·결정적(NFR-5 PBT 대상).
 > **NFR Design §7.3·§7.4 반영(Code Gen, 2026-09-09)**: C5 부분 실패 계약(evaluationStatus) 정합 — BR-STATE(UNAVAILABLE⇒NEEDS_REVIEW; COMPLETED만 Score 기반 판정), BR-OVERALL(기술 실패↛DEVELOP; UNAVAILABLE 존재∧COMPLETED REUSE/EXTEND 0 ⇒ NEEDS_REVIEW), BR-RANK(COMPLETED 먼저→UNAVAILABLE 뒤) 정제, PBT 불변식 **P1~P11**(P5·P8 개정, P10·P11 신규)로 확장.
+> **⟳ CR-001 증분(Action Handoff, 2026-09-09)**: **BR-HANDOFF**(C11 Action Prompt 생성; Decision별 목적·대상 Asset 선택·최소 유용성·§3.1 경계·확인 질문화·비차단 실패) + 불변식 **INV-HANDOFF-1~5** append. 근거·상세: [../../../change-requests/CR-001-functional-design-delta.md](../../../change-requests/CR-001-functional-design-delta.md).
 
 ---
 
@@ -93,6 +94,22 @@ UNAVAILABLE 후보 내부 정렬 키(score=null → 점수 비교 배제):
 - 기록: `{resultId, candidateId, verdict∈{useful,notFit}, timestamp}` append.
 - MVP는 **수집만**; 선별/랭킹 반영은 [Later] US-5.1.
 
+## BR-HANDOFF — Action Prompt 생성 (C11, C7 직후) · US-6.1 / FR-11 / NFR-8 **[CR-001]**
+**입력(grounding — 접근 가능 공개 투영만)**: `intent`(확정 StructuredIntent), `overallDecision`, `overallRationale`, `ranking`(RankedCandidate[], 미인가 제외·내부사유 미투영), `evidenceChains`(접근 가능 Evidence만). **출력**: `ActionPrompt`(실패 시 예외 → orchestrator None 처리).
+
+- **Decision→목적 매핑(결정적·순수 선택)**:
+  - `REUSE` → 선택 Asset **활용·통합**. 대상=최상위 접근 가능 후보. 근거=대상 evidenceChains + overallRationale.
+  - `EXTEND_EXISTING` → 기존 Asset과 요구의 **Gap 기반 수정·확장**. 대상=최상위 접근 가능 후보. Gap은 **확인 질문화**(사실 단정 금지).
+  - `DEVELOP` → **개발 시작**. 대상 없음(`[]`). 핵심 근거=확정 Structured Intent + overallRationale.
+  - `NEEDS_REVIEW` → **개발 미시작** Review Prompt(추가 Evidence·질문 정리). 대상 없음(`[]`).
+- **대상 Asset 선택(REUSE/EXTEND)**: `targetAssetNames = [ranking[0].assetName]`(BR-OVERALL상 Overall을 결정한 최고 Score COMPLETED 후보; 동점 driving-state 복수면 포함 가능). `ranking`은 접근 가능 후보만 포함하므로 노출 가능. **정합 가드**: REUSE/EXTEND인데 접근 가능 대상 후보 식별 불가(비정상)면 **Asset을 지어내지 않고** 생성 실패 처리(→ 비차단 None).
+- **최소 유용성(공통, US-6.1 AC)**: promptText는 **목표·근거·다음 작업·확인 사항** 4요소 포함. 확인되지 않은 Gap·전제는 **확인 질문 형태**로.
+- **§3.1 경계(NFR-8)**: NEEDS_REVIEW 원인이 평가 미완료(ranking에 evaluationStatus=UNAVAILABLE 존재)면, 후보 식별정보·상세·내부 기술사유 **없이** "일부 후보의 평가가 완료되지 않아 판단 확정을 위해 추가 검토 필요" 수준의 **후보 비식별·집계 일반 문구**만 포함 가능. UNAVAILABLE 부재면 이 문구 미포함.
+- **Grounding & 비노출**: intent·overallDecision·overallRationale·접근 가능 ranking·접근 가능 evidenceChains **만** 근거로. 미인가/제외 후보·후보 내부정보·technicalFailureReason·제외 개수/플래그를 promptText·targetAssetNames·근거에 **포함 금지**. 근거 밖 생성(환각) 금지.
+- **언어**: promptText는 사용자 Intent 입력 언어를 따름. **도구 비종속 자연어**(도구별 명령 금지).
+- **BR-HANDOFF-FAIL(비차단)**: C11 생성 실패(방식이 LLM이면 오류/타임아웃, 또는 정합 가드 위반)면 예외 → orchestrator가 `actionPrompt=None`(내부 감사 로깅). 기존 Decision·Evidence·ranking 결과는 유지·정상 반환(HTTP 200). Action Handoff는 핵심 결과의 선행 조건이 아님.
+- **생성 방식(LLM/템플릿/혼합)·PBT vs 예제 배분·demoMode 결정성**은 U1 NFR Design(증분)에서 확정.
+
 ---
 
 ## PBT 불변식 (NFR-5 — C6 순수 로직 대상) — **§7.4 evaluationStatus 정합(P1~P11)**
@@ -115,6 +132,20 @@ UNAVAILABLE 후보 내부 정렬 키(score=null → 점수 비교 배제):
 
 ---
 
+## Action Handoff 불변식 (BR-HANDOFF — **[CR-001]**; 상세 PBT/예제 배분은 NFR Design)
+
+> Overall→목적/대상요구/§3.1-허용 여부 **매핑 선택 로직**은 순수·결정적 → PBT 후보(INV-HANDOFF-1/2/5). 실제 문안 생성(LLM/템플릿)은 예제 기반 검증. 배분은 NFR Design(증분).
+
+| ID | 불변식 |
+|---|---|
+| **INV-HANDOFF-1** | `ActionPrompt.decisionState == 요청의 overallDecision`. |
+| **INV-HANDOFF-2** | `overall ∈ {REUSE, EXTEND_EXISTING} ⇒ targetAssetNames ≠ [] ∧ targetAssetNames ⊆ {접근 가능 ranking assetName}`; `overall ∈ {DEVELOP, NEEDS_REVIEW} ⇒ targetAssetNames == []`. |
+| **INV-HANDOFF-3** | promptText·targetAssetNames는 미인가/제외 자산 식별자·technicalFailureReason·제외 개수/플래그를 포함하지 않는다(grounding-only). |
+| **INV-HANDOFF-4** | 생성 실패 ⇒ `actionPrompt == None` ∧ AdviceResult의 ranking/overallDecision/overallRationale/isRecommendation/evidenceChains **불변**(비차단). |
+| **INV-HANDOFF-5** | `overall == NEEDS_REVIEW ∧ ¬(∃ UNAVAILABLE in ranking) ⇒ promptText에 '평가 미완료' 일반 문구 미포함`(§3.1은 UNAVAILABLE 존재 시에만). |
+
+---
+
 ## FR/스토리 트레이스
 - FR-2/US-1.3 → BR-CLARIFY
 - FR-3/US-2.1 → business-logic-model §3 step1
@@ -126,3 +157,4 @@ UNAVAILABLE 후보 내부 정렬 키(score=null → 점수 비교 배제):
 - FR-7/US-4.2 → BR-EVIDENCE
 - FR-9/US-4.3 → BR-FEEDBACK
 - NFR-5 → PBT 불변식 P1~P11 (§7.4 evaluationStatus 정합)
+- **FR-11/US-6.1 → BR-HANDOFF; NFR-8+§3.1 → BR-HANDOFF(§3.1 경계·grounding); INV-HANDOFF-1~5 [CR-001]**

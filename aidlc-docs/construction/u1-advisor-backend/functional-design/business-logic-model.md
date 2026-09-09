@@ -3,6 +3,7 @@
 > CONSTRUCTION - Functional Design (U1). 파이프라인 단계별 알고리즘·데이터 흐름 (기술 중립).
 > 오케스트레이터 S1(AdvisorOrchestratorService)이 컴포넌트를 동기 순차 호출. LLM 경계는 Q7=A(실제 LLM + 데모용 결정적 fixture 병행).
 > **NFR Design §1.3~1.6·§7 반영(Code Gen, 2026-09-09)**: C5 부분 실패 계약(evaluationStatus COMPLETED/UNAVAILABLE), 실패 처리 매트릭스(C1 실패→오류 종료 / C5 일부→후보 강등 / C5 전체→공통 오류), HTTP↔code 매핑(§1.6)을 흐름에 반영. §6 경계/오류 처리를 계약형으로 갱신.
+> **⟳ CR-001 증분(Action Handoff, 2026-09-09)**: advise 조립(step 7) **직후 step 8 = C11 ActionHandoffBuilder**(BR-HANDOFF, try/except 비차단) 삽입, `actionHandoff=null` 실패 행 추가. 근거·상세: [../../../change-requests/CR-001-functional-design-delta.md](../../../change-requests/CR-001-functional-design-delta.md).
 
 ---
 
@@ -85,8 +86,15 @@ IN: approvedIntent(StructuredIntent), ctx(PermissionContext)
      - capabilityMatch = reasoning 요약(intent.function 대비 적합 서술)
      - excluded 상세(ExcludedCandidate[])는 **서버 내부 로그/감사에만 기록**, 응답에 미포함 (FR-8/NFR-4)
        (권한 필터링은 기본 동작이므로 제외 플래그·개수도 응답에 두지 않음)
-     - AdviceResult{ resultId, ranking, overallDecision, overallRationale,
-                     isRecommendation=true, evidenceChains } 반환 (공개 응답)
+
+8) [CR-001] ActionHandoffComponent.build(intent, overallDecision, overallRationale, ranking, evidenceChains)  (C11, BR-HANDOFF)
+     - Decision→목적 매핑(REUSE/EXTEND=활용·확장+대상 Asset / DEVELOP=개발 시작 / NEEDS_REVIEW=Review Prompt)
+     - 최소 유용성(목표·근거·다음 작업·확인 사항), grounding=접근 가능 ranking/evidenceChains만, §3.1 경계(UNAVAILABLE 존재 시 후보 비식별 일반 문구만)
+     - try   → actionPrompt: ActionPrompt (INV-HANDOFF-1~5)
+       except→ actionPrompt = None  (내부 감사 로깅; 비차단, BR-HANDOFF-FAIL)
+
+9) AdviceResult{ resultId, ranking, overallDecision, overallRationale,
+                 isRecommendation=true, evidenceChains, actionPrompt } 반환 (공개 응답; actionPrompt 실패 시 null)
 ```
 
 ### 데이터 흐름 요약 (ASCII)
@@ -97,11 +105,11 @@ rawText
   ▼
 StructuredIntent ──(승인)──► advise
                                │
-   search ─► permissionFilter ─► selectTopN ─► reverify ─► classify+deriveOverall ─► buildEvidence ─► assemble
-     │            │                 │            │              │                        │
- Candidate[]  {acc,excl}         Top-3     Verified[]   states + overall           EvidenceChain[]
-                                                                                        │
-                                                                                   AdviceResult
+   search ─► permissionFilter ─► selectTopN ─► reverify ─► classify+deriveOverall ─► buildEvidence ─► assemble ─► actionHandoff[CR-001]
+     │            │                 │            │              │                        │              │              │
+ Candidate[]  {acc,excl}         Top-3     Verified[]   states + overall           EvidenceChain[]   ranking    ActionPrompt|null
+                                                                                                        │              │ (try/except 비차단)
+                                                                                                        └──────────────┴─► AdviceResult
 ```
 
 ---
@@ -144,6 +152,7 @@ record(resultId, candidateId, verdict) → Feedback{...,timestamp} append (in-me
 | C5 reverify() | **일부** 후보 실패 | 후보를 UNAVAILABLE로 강등, 정상 응답에 포함(§1.4/§7.1) | 200 (AdviceResult) |
 | C5 reverify() | **전체** 후보 실패(대상 ≥1) | AdviceResult 미반환, 공통 오류 | 502 `REVERIFICATION_UNAVAILABLE` |
 | demoMode ON 미매칭 입력 | — | 명시적 오류(암묵적 실제 호출 폴백 금지) | 422 `DEMO_FIXTURE_NOT_FOUND` |
+| **C11 ActionHandoff [CR-001]** | 생성 실패(방식 LLM이면 오류/타임아웃, 또는 정합 가드) | actionPrompt=None, 기존 결과 유지(비차단, BR-HANDOFF-FAIL) | 200 (AdviceResult, `actionHandoff=null`) |
 
 - **재시도 없음 + 타임아웃 config**(§1.1). **demoMode OFF는 fixture 폴백 없음**; demoMode ON은 대표 시나리오만 결정적 fixture(§1.2).
 - 공통 오류 응답 형태: `{ error: { code, message, requestId } }` — 내부 예외 문자열 미포함(§1.6).
@@ -155,3 +164,4 @@ record(resultId, candidateId, verdict) → Feedback{...,timestamp} append (in-me
 US-1.1(접수), US-1.2(structure), US-1.3(clarify), US-2.1(search), US-2.2(filter+TopN),
 US-3.1(reverify), US-3.2(classify), US-3.3(NEEDS_REVIEW), US-3.4(Overall DEVELOP),
 US-4.2(evidence 구성), US-4.3(feedback 기록). US-4.1은 데이터(ranking/overall) 제공.
+**[CR-001]** US-6.1(C11 Action Prompt 생성, advise step 8·BR-HANDOFF). US-6.2는 데이터(actionPrompt/actionHandoff) 제공(표시·Copy는 U2).

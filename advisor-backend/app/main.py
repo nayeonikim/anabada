@@ -14,6 +14,7 @@ from fastapi.responses import JSONResponse
 
 from app.api import errors as api_errors
 from app.api.schemas import (
+    ActionPromptDTO,
     AdviceResponse,
     AdviseRequest,
     ClarificationRequestDTO,
@@ -26,6 +27,7 @@ from app.api.schemas import (
     RankedCandidateDTO,
     StructuredIntentDTO,
 )
+from app.components.action_handoff import ActionHandoffComponent
 from app.components.asset_search import AssetSearchComponent
 from app.components.candidate_selection import CandidateSelectionComponent
 from app.components.evidence_builder import EvidenceBuilderComponent
@@ -71,6 +73,7 @@ def build_orchestrator(config: Config) -> AdvisorOrchestratorService:
         evidence_builder=EvidenceBuilderComponent(),
         feedback=FeedbackComponent(feedback_store),
         config=classification,
+        action_handoff=ActionHandoffComponent(llm),  # CR-001 Action Handoff (C11)
     )
 
 
@@ -224,6 +227,15 @@ def _advice_dto(result: AdviceResult) -> AdviceResponse:
             )
             for c in result.evidence_chains
         ],
+        actionHandoff=(
+            ActionPromptDTO(
+                decisionState=result.action_prompt.decision_state.value,
+                promptText=result.action_prompt.prompt_text,
+                targetAssetNames=list(result.action_prompt.target_asset_names),
+            )
+            if result.action_prompt is not None
+            else None
+        ),
     )
 
 

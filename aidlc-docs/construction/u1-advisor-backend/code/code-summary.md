@@ -75,3 +75,50 @@
 `advisor-backend/README.md` 참조 (uvicorn 실행, env, demoMode, pytest).
 
 > **주의**: 본 단계는 코드/테스트 **생성**까지. 빌드·테스트 실행 및 통과 확인은 Build & Test 단계.
+
+---
+
+## CR-001 Action Handoff (증분)
+
+> Evidence-grounded Action Prompt 생성 증분. 근거 계획: `aidlc-docs/construction/plans/u1-advisor-backend-cr-001-code-generation-plan.md`(Step 1~11).
+> 근거 설계: `change-requests/CR-001-functional-design-delta.md`(ActionPrompt·BR-HANDOFF·INV-HANDOFF-1~5·advise step 8), `CR-001-nfr-design-delta.md`(D3 하이브리드·비차단·grounding-only·§0 NFR 최소화), `CR-001-application-design-delta.md`(ActionPromptDTO 계약).
+
+### C1. 생성/수정 파일
+| 파일 | 구분 | 변경 |
+|---|---|---|
+| `app/components/action_handoff.py` | 신규 | C11 ActionHandoffComponent(하이브리드) + 순수 `select_target_asset_names`/`should_note_unavailable`/`_evidence_lines` |
+| `tests/pbt/test_action_handoff.py` | 신규 | Hypothesis PBT(INV-HANDOFF-1/2/5 순수 로직) |
+| `tests/unit/test_action_handoff.py` | 신규 | pytest 예제(INV-HANDOFF-3/4·최소 유용성 4요소·demoMode 재현) |
+| `app/domain/models.py` | 수정 | `ActionPrompt` dataclass + `AdviceResult.action_prompt: Optional[ActionPrompt]=None` |
+| `app/infra/llm_client.py` | 수정 | `ActionPromptRequest` + `generate_action_prompt` (ABC/BedrockClaudeClient/FixtureLLMClient) |
+| `app/services/orchestrator.py` | 수정 | advise() step 8 try/except 비차단(C11 실패→`action_prompt=None`, `action_handoff_failed` 내부 감사) |
+| `app/api/schemas.py` | 수정 | `ActionPromptDTO` + `AdviceResponse.actionHandoff: Optional[ActionPromptDTO]=None` |
+| `app/main.py` | 수정 | `ActionHandoffComponent(llm)` DI 배선 + AdviceResult→DTO None-safe 매퍼 |
+| `data/demo_fixtures.json` | 수정 | `actionHandoff` 섹션(대표 시나리오 3종 결정적 promptText) |
+
+### C2. 설계 요점
+- **D3 하이브리드**: (a) **순수·결정적** 구조/선택 — Decision→목적 매핑, 대상 Asset 선택(`ranking[0]`), §3.1 '평가 미완료' 게이팅, grounding 페이로드 조립(접근 가능 ranking/evidenceChains 공개 투영만) → PBT 대상. (b) **LLM 자연어 본문** — grounding-only 페이로드로 promptText 생성(LLMClient/FixtureLLMClient).
+- **비차단 격리(INV-HANDOFF-4)**: C11 실패(정합 가드 위반·LLM 오류/타임아웃·빈 응답)는 예외로 신호, orchestrator가 잡아 `action_prompt=None` → 핵심 결과 200 정상, 나머지 결과 불변.
+- **grounding-only 비노출(NFR-8/INV-HANDOFF-3)**: 입력이 이미 공개 투영이라 미인가 자산명·`technicalFailureReason`·제외 개수/플래그가 구조적으로 유입 불가. `targetAssetNames`는 순수 로직 산출(LLM 자유생성 아님).
+- **NFR 최소화(§0)**: 신규 config/인프라 0(기존 `DEMO_MODE`+`LLM_TIMEOUT_SECONDS` 재사용), `/advise`당 LLM 호출 1회 추가, 전용 관측/정량 SLA 없음.
+
+### C3. 공개 계약 (U1→U2)
+- `AdviceResponse.actionHandoff: ActionPromptDTO | null` (생성 실패/부재 시 `null` — 비차단).
+- `ActionPromptDTO = { decisionState, promptText, targetAssetNames[] }` (camelCase). 내부 `ActionPrompt` 타입 미노출(§3.2).
+
+### C4. 스토리 ↔ 불변식 트레이스
+| 근거 | 대상 |
+|---|---|
+| US-6.1 / FR-11 | BR-HANDOFF · ActionPrompt 엔티티 · INV-HANDOFF-1~5 (C11 생성) |
+| NFR-8 / §3.1 | INV-HANDOFF-3(비노출) · INV-HANDOFF-5(§3.1 게이팅) |
+| delta §4 비차단 | INV-HANDOFF-4(실패→null, 핵심 결과 불변) |
+| US-6.2 / FR-12 | `actionHandoff` DTO 데이터 제공(표시·Copy는 **U2** 범위, U1은 데이터만) |
+
+### C5. 불변식 검증 배분
+| 방식 | 커버 |
+|---|---|
+| Hypothesis PBT (순수) | INV-HANDOFF-1(decisionState==overall) · 2(targetAssetNames 규칙) · 5(§3.1 게이팅) |
+| pytest 예제 | INV-HANDOFF-3(promptText/targetAssetNames 미인가 자산명·technicalFailureReason 미포함) · 4(LLM mock 예외→action_prompt=None ∧ 기타 결과 불변) · 최소 유용성 4요소(목표·근거·다음 작업·확인 사항) · demoMode 재현 |
+
+> **비회귀**: 기존 공개 DTO/테스트 계약 불변(`actionHandoff`는 optional/nullable 추가), P1~P11 불변. orchestrator `action_handoff` 생성자 인자 기본값 `None`으로 기존 `test_orchestrator.py` 무수정.
+> **주의**: 본 단계는 코드/테스트 **생성**까지. 빌드·테스트 실행 및 통과 확인은 Build & Test 단계.

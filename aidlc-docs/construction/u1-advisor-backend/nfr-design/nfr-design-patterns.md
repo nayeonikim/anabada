@@ -3,6 +3,7 @@
 > Stage: CONSTRUCTION - NFR Design (U1). NFR 요구를 구체적 설계 패턴으로 구현.
 > 근거: nfr-requirements.md, tech-stack-decisions.md, business-logic-model.md(S1 + C1~C8), NFR Design plan(Q1~Q5).
 > 확장: Security/Resiliency blocking 미적용. 아래 패턴은 MVP 범위의 경량 적용.
+> **⟳ CR-001 증분(Action Handoff, 2026-09-09)**: **D3 확정 = 하이브리드**(결정적 구조/선택 + LLM 자연어 본문). C11 Action Handoff 패턴(비차단 격리·grounding-only 비노출·PBT vs 예제 배분)은 **§8** 참조. authoritative: [../../../change-requests/CR-001-nfr-design-delta.md](../../../change-requests/CR-001-nfr-design-delta.md).
 
 ---
 
@@ -164,6 +165,7 @@
 | NFR-T1~3 | Pure-Core Isolation, LLM Seam, Fixture Provider |
 | NFR-C1~C2 | Bounded Fan-out, Prompt 간결화, 명시적 demoMode |
 | NFR-M1~3 | (logical-components: StructuredLogger, Config 모듈, OpenAPI) |
+| **NFR-8 [CR-001]** | §8 Action Handoff: grounding-only 입력, 구조 필드 비-LLM 결정, Rationale Guard 확장, ActionPromptDTO 타입 강제, §3.1 게이팅, 비차단 격리 |
 
 ---
 
@@ -210,3 +212,23 @@
 ### 7.5 Code Generation 반영 지시
 - 위 7.1~7.4를 domain-entities.md / business-rules.md / business-logic-model.md에 **Code Gen 시 반영**(현 단계는 백엔드 응답 계약 확정까지; UI 문구/표시는 추후 검토).
 - 공개 DTO 세트(내부 타입 분리) + demoMode 미매칭 오류 경로 + §1.6 HTTP↔code 매핑 구현.
+
+---
+
+## 8. Action Handoff 패턴 (C11) — **[CR-001] · D3 하이브리드 · NFR-8/A2/A3/C1/T1**
+
+> authoritative·상세: [../../../change-requests/CR-001-nfr-design-delta.md](../../../change-requests/CR-001-nfr-design-delta.md). 근거 불변식 INV-HANDOFF-1~5(business-rules.md), BR-HANDOFF.
+
+### 8.1 D3 확정 — 하이브리드 (결정적 구조/선택 + LLM 자연어 본문)
+- **(a) 순수·결정적**: Decision→목적 매핑, 대상 Asset 선택(ranking[0]), §3.1 문구 허용 판정, grounding 페이로드 조립, 섹션 골격(목표·근거·다음 작업·확인 사항) → INV-HANDOFF-1/2/5(NFR-T1/T2).
+- **(b) LLM 자연어 본문**: 기존 LLMClient(Bedrock)+FixtureProvider 이음새 재사용 → grounding-only 페이로드로 promptText 생성(NFR-T3/A3/C1).
+- 기각: 순수 LLM(비노출·불변식 약화) / 순수 템플릿(유용성 부족).
+
+### 8.2 비차단 격리 (BR-HANDOFF-FAIL) — vs C1/C5 대비
+- No-Retry + Config Timeout(§1.1 재사용). **C11 실패는 오류 응답이 아니라 `actionPrompt=null`**(§1.3 매트릭스 신규 행). 요청당 최대 1회 생성(fan-out 아님 → 부분 실패 개념 없음).
+
+### 8.3 비노출 (NFR-8) — §3 확장
+- 입력은 접근 가능 ranking·evidenceChains·intent·overallDecision·overallRationale만(미인가·technicalFailureReason·제외 개수 구조적 부재). `targetAssetNames`는 순수 로직 산출(LLM 자유생성 아님). Rationale Guard(§3.3)를 promptText로 확장. 공개 ActionPromptDTO 타입 강제(§3.2). §3.1 '평가 미완료' 문구는 `∃ UNAVAILABLE`일 때만 게이팅(INV-HANDOFF-5).
+
+### 8.4 테스트 배분 (PBT=Partial)
+- **PBT(Hypothesis)**: INV-HANDOFF-1/2/5(순수 매핑/선택). **pytest 예제**: INV-HANDOFF-3(비노출)·INV-HANDOFF-4(비차단, LLM mock 예외)·최소 유용성 4요소·demoMode 재현(NFR-A3). LLM 문안은 예제 기반.

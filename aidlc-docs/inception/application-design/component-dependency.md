@@ -11,6 +11,8 @@
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | **Web UI** | ✅ | | | | | | | | | | | |
 | **Orchestrator (S1)** | — | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | | | |
+
+> *(CR-001 증분)* **Orchestrator (S1) → C11 ActionHandoffBuilder**: ✅ 신규(C7 EvidenceBuilder 직후 호출, 비차단). **C11 → 외부**: 없음(공개 투영 ranking/evidenceChains만 소비) 또는 LLMClient(생성 방식이 LLM일 경우 — Functional/NFR Design에서 확정). MockDataStore 직접 의존 없음.
 | **C2 Search** | | | — | | | | | | | ✅ | (via S2) | |
 | **C3 PermFilter** | | | | — | | | | | | | | ✅ |
 | **C5 ReVerify** | | | | | | — | | | | | | (LLM 외부) |
@@ -60,10 +62,14 @@
    |  (6) verified + states + ctx
    +--> C7 EvidenceBuilder --(reads)--> C10 MockDataStore --> EvidenceChain[]
    |
-   +--> (7) AdviceResult { ranking, overallDecision, evidenceChains, excluded }
+   |  (7) ranking 조립 (State->Score->name)
+   |  (8) [CR-001] intent + overall + rationale + ranking + evidenceChains
+   +--> C11 ActionHandoffBuilder --> ActionPrompt   (try/except -> None, 비차단)
+   |
+   +--> (9) AdviceResult { ranking, overallDecision, evidenceChains, [actionPrompt?] }
             |
             v
-        [Web UI]  (랭킹 + Overall + Evidence 단일 화면)
+        [Web UI]  (랭킹 + Overall + Evidence + Action Prompt(표시/Copy) 단일 화면)
             |  feedback
             v
      submitFeedback() --> C8 Feedback (기록)
@@ -85,6 +91,7 @@ flowchart TD
     C6["C6 DecisionClassifier (pure)"]
     C7["C7 EvidenceBuilder"]
     C8["C8 Feedback"]
+    C11["C11 ActionHandoffBuilder (CR-001)"]
     REG["SourceAdapterRegistry"]
     AD["Mock SourceAdapters x6"]
     DS["MockDataStore"]
@@ -98,6 +105,7 @@ flowchart TD
     ORCH --> C6
     ORCH --> C7
     ORCH --> C8
+    ORCH --> C11
     C2 --> REG
     REG --> AD
     AD --> DS
@@ -106,9 +114,10 @@ flowchart TD
 
     style ORCH fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
     style C6 fill:#FFA726,stroke:#E65100,stroke-width:2px,color:#000
+    style C11 fill:#A5D6A7,stroke:#1B5E20,stroke-width:2px,color:#000
     style AD fill:#90CAF9,stroke:#0D47A1,stroke-width:2px,color:#000
     style DS fill:#CE93D8,stroke:#6A1B9A,stroke-width:2px,color:#000
     linkStyle default stroke:#333,stroke-width:2px
 ```
 
-**Text alternative**: Web UI는 Orchestrator만 호출한다. Orchestrator는 C1~C8을 순차 호출한다. C2는 Registry를 통해 6개 Mock Adapter를 호출하고, Adapter는 MockDataStore를 읽는다. C3(권한)와 C7(Evidence)도 MockDataStore를 읽는다. C6은 외부 의존이 없는 순수 로직이다.
+**Text alternative**: Web UI는 Orchestrator만 호출한다. Orchestrator는 C1~C8을 순차 호출하고, *(CR-001 증분)* C7 직후 C11 ActionHandoffBuilder를 비차단 호출한다. C2는 Registry를 통해 6개 Mock Adapter를 호출하고, Adapter는 MockDataStore를 읽는다. C3(권한)와 C7(Evidence)도 MockDataStore를 읽는다. C6은 외부 의존이 없는 순수 로직이다. C11은 접근 가능 공개 투영(ranking/evidenceChains)만 소비한다.

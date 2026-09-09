@@ -5,12 +5,13 @@
 > **INVEST** 준수. 모든 스토리에 **[MVP]** 또는 **[Later]** 태그. **Hero Scenario** 스토리에는 대표 mock 데이터 예시 첨부.
 > **AC 형식**: Given / When / Then.
 > **Personas**: P1 Developer, P2 Business User (둘 다 = 공통).
+> **CR-001 증분 (Product Scope Change)**: Epic 6 Action Handoff — US-6.1(생성) / US-6.2(표시·Copy). 근거 `change-requests/CR-001-requirements-delta.md` FR-11 / FR-12 / NFR-8(+§3.1). C7 EvidenceBuilder 직후 **append-only**, 기존 스토리 미수정.
 
 ---
 
 ## 🎯 Hero Scenario (Persona 무관 공통 흐름)
 
-한 사용자가 만들려는 S/W를 자연어로 입력 → AI가 구조화 → 사내 자산(mock) 검색 → **권한 필터(Permission Filter)로 접근 불가 자산 제외** → 접근 가능 후보 중 상위 N개(Top-N) 선별 → 상위 후보 LLM 재검증 → Decision(후보별 State + Overall) 분류 → 랭킹 + Evidence를 웹 화면에서 비교. Hero 스토리: **US-1.1, US-1.2, US-2.1, US-2.2, US-3.1, US-3.2, US-4.1, US-4.2**.
+한 사용자가 만들려는 S/W를 자연어로 입력 → AI가 구조화 → 사내 자산(mock) 검색 → **권한 필터(Permission Filter)로 접근 불가 자산 제외** → 접근 가능 후보 중 상위 N개(Top-N) 선별 → 상위 후보 LLM 재검증 → Decision(후보별 State + Overall) 분류 → 랭킹 + Evidence를 웹 화면에서 비교 → **Action Handoff: 현재 산출된 Overall Decision 기반 실행 Prompt를 생성·표시하고 Copy(성공까지)**. Hero 스토리: **US-1.1, US-1.2, US-2.1, US-2.2, US-3.1, US-3.2, US-4.1, US-4.2, US-6.1, US-6.2**.
 
 ---
 
@@ -147,6 +148,34 @@
 
 ---
 
+## Epic 6 — Action Handoff (재사용 판단 → 다음 행동 Prompt)
+*목적: **현재 산출된 Overall Decision(NEEDS REVIEW 포함)**과 그 근거를 "다음 AI-assisted 개발에서 바로 쓸 실행 가능한 단일 Prompt"로 연결한다. C7 EvidenceBuilder 직후 **append-only** — 기존 파이프라인·랭킹·Decision 산출물을 **소비만** 하고 변경하지 않는다. (FR-11, FR-12, NFR-8+§3.1)*
+
+### US-6.1 Action Prompt 생성 **[MVP]** · Hero
+- **As a** 사용자(P1/P2), **I want** 재사용 판단이 끝나면 그 결론과 근거를 바탕으로 다음 개발에 바로 쓸 실행 Prompt를 받고 싶다, **so that** 판단에서 행동으로 곧장 이어갈 수 있다. (FR-11)
+- **근거(grounding)**: 확정된 Structured Intent · **현재 산출된 Overall Decision 및 판단 근거** · 접근 가능한 Evidence·Candidate. (근거 밖 생성 금지 — NFR-8)
+- **AC**
+  - Given 현재 산출된 Overall Decision과 위 근거, When Action Handoff를 수행하면, Then Overall Decision State별 목적에 맞는 **단일 실행 Prompt**(도구 비종속 자연어, 사용자 입력 언어)를 생성한다.
+  - Given 생성된 Prompt, Then 최소 유용성을 위해 **목표 · 근거 · 다음 작업 · 확인 사항**을 포함한다.
+  - Given Overall = REUSE 또는 EXTEND EXISTING, Then Prompt는 **대상 Asset을 명확히 식별**한다(활용·통합 / Gap 기반 수정·확장 목적).
+  - Given Overall = DEVELOP, Then **확정된 Structured Intent**를 핵심 근거로 개발 시작 목적의 Prompt를 만든다.
+  - Given Overall = NEEDS REVIEW, Then **개발을 시작하지 않고** 판단 확정에 필요한 추가 Evidence·질문을 정리하는 **Review Prompt**를 만든다. 평가 미완료가 원인인 경우, 후보 식별정보·후보별 상세·내부 기술사유 없이 **"일부 평가 미완료로 판단 확정 필요"라는 후보 비식별·일반 수준 제한 문구**만 포함할 수 있다. (Q4, NFR-8 §3.1)
+  - Given 확인되지 않은 Gap·전제, Then 사실로 단정하지 않고 **확인 질문 형태**로 표현한다.
+  - Given 미인가·권한 제외 후보 또는 내부 기술사유, Then Prompt의 근거·본문에 **노출하지 않는다**. (NFR-8)
+  - Given Action Prompt 생성이 실패하면, Then **기존 Decision·Evidence·랭킹 결과는 유지·정상 반환**하고 Action Prompt 부재만 표시한다(비차단·append-only).
+- **최소 구현**: Decision 4종별 Prompt 목적 + 최소 유용성 필드(목표/근거/다음 작업/확인) + evidence-grounding 불변식 + 생성 실패 시 결과 유지 대표 mock/test case.
+
+### US-6.2 Action Prompt 표시 & Copy **[MVP]** · Hero
+- **As a** 사용자(P1/P2), **I want** 생성된 Action Prompt를 결과 화면에서 보고 복사하고 싶다, **so that** 외부 AI 개발 도구에 바로 붙여넣어 쓴다. (FR-12)
+- **AC**
+  - Given Advisor 결과에 Action Prompt가 포함되면, When 결과 화면을 열면, Then Action Prompt를 표시하고 **어떤 Overall Decision에 대한 것인지** 자기설명적으로 드러낸다. (NFR-1 / NFR-6)
+  - Given 표시된 Prompt, When Copy를 실행하면, Then 전체 Prompt를 클립보드에 복사하고 **복사 성공을 사용자에게 알린다("복사됨")**.
+  - Given Copy가 실패하면(예: 클립보드 접근 거부), Then **복사 실패를 알리고** 사용자가 수동으로 선택·복사할 수 있는 대안을 제공한다.
+  - Given Action Prompt가 결과에 없으면(생성 실패 등), Then 기존 판단 결과(랭킹·Decision·Evidence)는 그대로 표시하고 **Action Prompt 부재만 안내**한다.
+- **비고**: U1→U2 계약은 Advisor 결과의 Action Prompt를 소비. **구체 API 경로·필드명은 Application Design에서 확정**하며, 본 AC는 특정 경로·필드를 전제하지 않는다.
+
+---
+
 ## Persona ↔ Story Mapping
 
 | Story | P1 Developer | P2 Business User |
@@ -155,6 +184,7 @@
 | US-2.1 / US-2.2 | ✅ | ✅ |
 | US-3.1 / US-3.2 / US-3.3 / US-3.4 | ✅ | ✅ |
 | US-4.1 / US-4.2 / US-4.3 | ✅ | ✅ |
+| US-6.1 / US-6.2 (Action Handoff) | ✅ | ✅ |
 | US-5.1 | ✅ (Code/API/Skill 가중) | ✅ (Dashboard/Tool 가중) |
 | US-5.2 | ✅ | ✅ |
 
@@ -164,5 +194,5 @@
 
 ## MVP / Later 요약
 
-- **[MVP]**: US-1.1, US-1.2, US-1.3, US-2.1, US-2.2, US-3.1, US-3.2, US-3.3, US-3.4, US-4.1, US-4.2, US-4.3(피드백 수집)
+- **[MVP]**: US-1.1, US-1.2, US-1.3, US-2.1, US-2.2, US-3.1, US-3.2, US-3.3, US-3.4, US-4.1, US-4.2, US-4.3(피드백 수집), US-6.1, US-6.2(Action Handoff)
 - **[Later]**: US-4.3(선별 고도화), US-5.1, US-5.2
