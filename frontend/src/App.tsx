@@ -190,6 +190,7 @@ export default function App() {
                 isRecommendation={advice.isRecommendation}
                 topCandidateName={topCandidate?.assetName ?? null}
                 topScorePercent={scorePercent(topCandidate)}
+                handoff={advice.actionHandoff ?? null}
               />
               <CandidateList
                 ranking={advice.ranking}

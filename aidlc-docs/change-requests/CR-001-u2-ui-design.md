@@ -1,6 +1,6 @@
 # CR-001 — U2 Action Handoff UI Design (US-6.2)
 
-**Status**: DRAFT — 승인 대기 (PLAN ONLY, 구현 미착수)
+**Status**: APPROVED (2026-09-09) — Q-TARGET/Q-NULL/Q-LABEL/Q-TEST 확정(§7). U2 Code Generation(증분) Part 2 진행 중.
 **Stage**: CONSTRUCTION → **U2 UI Design (증분)** — U2 Code Generation *앞*의 별도 설계 게이트.
 **Authoritative for**: U2 Action Handoff 표시·Copy의 상세 UI(화면 배치·정보 계층·상태·접근성).
 **Supersedes(부분)**: `CR-001-u2-action-handoff-design-delta.md` 의 **D1(하단 별도 패널 배치)** — 본 문서의 탭 기반 배치로 대체. 그 외 델타 내용(계약 소비·null 처리·a11y 재사용)은 재사용.
@@ -186,7 +186,7 @@
 [추천 후보 Top N ... 정상 렌더]
 ```
 
-- `actionHandoff == null` → **탭 스트립을 그리지 않고**, 배너 하단에 흐린 1줄 안내만. 판정·요약·후보·근거는 App/VerdictBanner가 독립 렌더하므로 그대로 유지(비차단). (안내 위치를 배너 안 vs 배너 밑으로 둘지는 §7 Q-NULL.)
+- **[Q-NULL 확정 override]** `actionHandoff == null` → **탭 스트립은 그대로 유지**하고, `✨ 추천 프롬프트` **패널 안**에 부재 안내(`.handoff-note`)만 표시한다. 판정·요약·후보·근거는 App/VerdictBanner가 독립 렌더하므로 그대로 유지(비차단). (위 M5 ASCII는 초안이며, 실제 구현은 §5.3 의사설계 + §7 확정을 따른다.)
 
 ### M6. 반응형 (≤ 720px)
 
@@ -232,23 +232,36 @@ App (App.tsx:187)
 
 ### 5.3 `ActionHandoffTab` 렌더 규칙 (의사설계)
 ```
-handoff == null            → <p class="clarify-hint" style opacity↓>ⓘ 부재 안내(M5)</p>  (탭/패널 없음)
-handoff != null            → <div class="tabs" role="tablist">
-                                <button class="tab tab--active" role="tab" aria-selected="true"
-                                        aria-controls="handoff-panel" id="handoff-tab">✨ 추천 프롬프트</button>
-                              </div>
-                              <div class="tab-panel" role="tabpanel" id="handoff-panel"
-                                   aria-labelledby="handoff-tab">
-                                <span class="badge badge--{variant(decisionState)}">{decisionState}</span>
-                                {targetAssetNames.length>0 && "대상 자산: " + join(' · ')}   // §7 Q-TARGET
-                                <div class="ai-answer"><p class="ai-answer-label">실행 프롬프트</p>
-                                     <p class="ai-answer-text">{promptText}</p></div>          // pre-wrap
-                                <div class="handoff-actions">
-                                   <button class="btn btn--sm" onClick={copy}>📋 복사</button>
-                                   copied  → <span class="confirmation" role="status">복사됨</span>
-                                   failed  → <span class="error-text" role="alert">복사 실패 안내 + 수동 대안</span>
-                                </div>
-                              </div>
+// 탭 스트립은 null/비-null 공통으로 항상 렌더 (Q-NULL 확정: 탭 내부 안내). 루트 = <div class="handoff">.
+<div class="handoff">
+  <div class="tabs" role="tablist">
+    <button class="tab tab--active" role="tab" aria-selected="true"
+            aria-controls="handoff-panel" id="handoff-tab">✨ 추천 프롬프트</button>
+  </div>
+  <div class="tab-panel" role="tabpanel" id="handoff-panel" aria-labelledby="handoff-tab">
+
+    handoff == null  →  <p class="handoff-note">실행 프롬프트를 생성하지 못했습니다.
+                          위 판단 결과(판정·후보·근거)는 그대로 유효합니다.</p>   // 부재 안내(패널 내부)
+
+    handoff != null  →  <div class="handoff-meta">
+                          <span class="badge badge--{variant(decisionState)}">{decisionState}</span>
+                          {targetAssetNames.length>0 &&                              // Q-TARGET: []이면 숨김
+                             <span class="handoff-target">대상 자산: {join(' · ')}</span>}
+                        </div>
+                        // Q-LABEL: NEEDS_REVIEW 는 검토용임을 명시, 개발 실행 유도 문구 금지
+                        <p class="handoff-note">
+                           decisionState==='NEEDS_REVIEW'
+                             ? '판단 확정을 위한 검토용 프롬프트입니다. 후보와 근거를 먼저 검토하세요.'
+                             : '복사해 외부 AI 도구에 붙여넣어 사용할 수 있습니다.'</p>
+                        <div class="ai-answer"><p class="ai-answer-label">추천 프롬프트</p>   // '실행'→'추천'
+                             <p class="ai-answer-text">{promptText}</p></div>          // pre-wrap, 선택 가능
+                        <div class="handoff-actions">
+                           <button class="btn btn--sm" onClick={copy}>📋 복사</button>
+                           copied  → <span class="confirmation" role="status">복사됨</span>
+                           failed  → <span class="error-text" role="alert">복사 실패 안내 + 수동 대안</span>
+                        </div>
+  </div>
+</div>
 ```
 - Copy: `navigator.clipboard.writeText(handoff.promptText)` → then `copied`; catch → `failed`. 신규 의존성 0(브라우저 Clipboard API, secure context=localhost 데모 OK).
 
@@ -269,14 +282,14 @@ handoff != null            → <div class="tabs" role="tablist">
 
 ---
 
-## 7. 열린 결정 (자동 확정 금지 — `CR-001-u2-ui-design-questions.md` 에서 확정)
+## 7. 열린 결정 — **확정 (2026-09-09, 사용자 승인)**
 
-- **Q-TARGET**: `targetAssetNames`(REUSE/EXTEND)를 "대상 자산" 줄로 표시할지. (권장: 표시 — 최소 유용성)
-- **Q-NULL**: 부재(null) 안내를 **배너 안** vs **배너 아래 별도 줄** 중 어디에. (권장: 배너 안 하단, 흐린 1줄)
-- **Q-LABEL**: NEEDS_REVIEW/DEVELOP일 때 패널 라벨을 "실행 프롬프트" 그대로 vs "다음 단계"로 적응. (권장: "실행 프롬프트" 고정 — 최소 변경, 배지/컨텍스트가 성격 전달)
-- **Q-TEST**: frontend 유닛 테스트 하네스 없음 → 검증을 `tsc + vite build + demoMode 스모크`로 한정(NFR-minimization). (권장: 예)
+- **Q-TARGET = 표시**: `targetAssetNames`를 "대상 자산" 줄로 표시하되 **빈 배열이면 숨김**(DEVELOP/NEEDS_REVIEW는 자연히 미표시).
+- **Q-NULL = 탭 내부 안내**: 부재(null)에도 `✨ 추천 프롬프트` **탭을 유지**하고 **패널 안에** 부재 안내를 표시. 기존 판정·후보·근거는 그대로 유효(비차단). → 초안 §4 M5의 "탭 없이 배너 하단 1줄" 은 **override**됨.
+- **Q-LABEL**: 탭 제목은 **`✨ 추천 프롬프트`로 통일**. 내부 박스 라벨은 '실행 프롬프트' → **'추천 프롬프트'**로 조정. **NEEDS_REVIEW** 는 "판단 확정을 위한 검토용 프롬프트입니다. 후보와 근거를 먼저 검토하세요." 로 검토 성격을 명시. **개발 실행을 유도하는 문구(명령형 CTA)는 사용하지 않음.**
+- **Q-TEST = 신규 하네스 생략**: 검증은 `tsc(strict) + vite build` + **스모크**(Decision 4종 REUSE·EXTEND_EXISTING·DEVELOP·NEEDS_REVIEW, Copy 성공/실패, null, 모바일(≤720px), 키보드 접근성). 신규 테스트 프레임워크 도입 없음(NFR-minimization).
 
-> 배치(Q1)는 사용자 승인으로 **확정**(§3): 최종 판정 배너 내 `✨ 추천 프롬프트` 단일 탭.
+> 배치(Q1)는 §3에서 이미 확정: 최종 판정 배너 내 `✨ 추천 프롬프트` 단일 탭.
 
 ---
 

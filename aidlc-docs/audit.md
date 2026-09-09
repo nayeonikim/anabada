@@ -719,3 +719,18 @@ Q9=B (데스크톱 전용)
 **Context**: CONSTRUCTION - U2 UI Design(증분) 승인 게이트
 
 ---
+
+## CR-001 U2 UI Design(증분) — 승인(Continue) + 열린 결정 확정 + 멀티에이전트 구현 착수
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "② Continue to Next Stage. UI Design을 승인하고 멀티에이전트로 진행해줘. 열린 결정: - Q-TARGET: A. 대상 자산 표시, 빈 배열이면 숨김. - Q-NULL: A. 탭 내부 안내, 기존 판정·근거 유지. - Q-LABEL: 탭 제목은 "추천 프롬프트"로 통일하되, NEEDS REVIEW에서는 "판단 확정을 위한 검토용 프롬프트"임을 명시. 개발 실행을 유도하는 문구는 사용하지 않는다. - Q-TEST: 새 테스트 하네스는 생략하되 build/타입 검사와 네 Decision(REUSE·EXTEND EXISTING·DEVELOP·NEEDS REVIEW), Copy 성공/실패, null, 모바일, 키보드 접근성 스모크 검증을 포함. 먼저 승인된 UI Design과 코드 생성 계획을 정합화하고, 필수 AI-DLC 승인 게이트를 지킨 뒤 구현한다. 병렬 담당: 1. ActionHandoffTab.tsx — UI 컴포넌트·Copy·부재 상태·접근성. 2. types.ts / VerdictBanner.tsx / App.tsx — API 타입·prop 전달·배치 연결. 3. 검증 담당 — 승인 AC 기반 검증 준비, 통합 후 스모크 검증. 주 에이전트가 props·타입 계약을 먼저 확정하고 공유한다. 공통 CSS와 state/audit는 주 에이전트만 수정한다. 동일 파일 동시 수정과 하위 에이전트의 commit/push/rebase는 금지한다. 현재 integration/action-handoff-on-main 브랜치에서 진행하고, 통합 후 Build & Test 결과와 남은 승인 항목을 보고해줘."
+**AI Response**: **U2 UI Design(증분) APPROVED**. 열린 결정 확정 — Q-TARGET=대상 자산 표시([]이면 숨김) / Q-NULL=탭 내부 안내(탭 유지, 패널 안 부재 안내, 판정·근거 유지 — 초안 M5의 '탭 없이 하단 1줄'을 override) / Q-LABEL=탭 제목 `✨ 추천 프롬프트` 통일 + 내부 박스 라벨 '실행 프롬프트'→'추천 프롬프트' 조정 + NEEDS_REVIEW는 '판단 확정을 위한 검토용 프롬프트' 명시·개발 실행 유도 문구 금지 / Q-TEST=신규 하네스 생략, build/tsc + Decision 4종·Copy 성공/실패·null·모바일·키보드 스모크. 주 에이전트: 실제 최신 코드(App.tsx/VerdictBanner.tsx/CandidateList.tsx/types.ts/styles.css) 대조 → props·타입 계약 락(`ActionPromptDTO` 3필드, `AdviceResponse.actionHandoff`, `<ActionHandoffTab handoff/>` default export) → 코드생성 계획 탭 기반 정합화 → 공통 CSS(.handoff/.handoff-meta/.handoff-note/.handoff-target/.handoff-actions)·state·audit·설계문서(§5.3/§7) 갱신. 이후 병렬 3담당(fork)로 구현: (1) ActionHandoffTab.tsx (2) types.ts/VerdictBanner.tsx/App.tsx (3) 검증. 하위 에이전트 commit/push/rebase 금지·동일 파일 동시수정 금지. 브랜치 `integration/action-handoff-on-main` 유지. 통합 후 Build & Test(tsc+build+스모크) 결과와 남은 승인 항목(Code Generation 스테이지 완료 게이트 + Build & Test 게이트) 보고 예정.
+**Context**: CONSTRUCTION - U2 UI Design APPROVED + U2 Code Generation(증분) Part 2 멀티에이전트 착수
+
+---
+
+## CR-001 U2 Code Generation(증분) Part 2 — 멀티에이전트 구현 완료 + 검증 PASS
+**Timestamp**: 2026-09-09T00:00:00Z
+**AI Response**: 병렬 3담당(fork) 완료. **Agent 1**: `frontend/src/components/ActionHandoffTab.tsx` 신규(단일 탭 상시 렌더, null→패널 내 부재 안내, 배지+대상자산(조건)+note+`.ai-answer` pre-wrap+Copy 성공/실패, 로컬 useState·clipboard try/catch·badgeVariant, a11y role/aria-hidden). **Agent 2**: `types.ts`(ActionPromptDTO + actionHandoff nullable) / `VerdictBanner.tsx`(handoff prop + `.ai-answer` 다음 렌더) / `App.tsx`(`handoff={advice.actionHandoff ?? null}`). **Agent 3(검증)**: BUILD PASS(tsc strict 0, vite 41 modules +1) + AC 10항목 스모크 전부 ✅(타입계약·Decision 4종·Copy 성공/실패·Q-TARGET 조건부·Q-NULL 탭 내부 안내·Q-LABEL 라벨/문구·키보드·모바일·NFR-8·NFR-min), 블로킹 0. **주 에이전트 직접 재확인**: `cd frontend && npm run build` → tsc 0 + vite 41 modules(built 666ms) 확인. 문서 갱신: 코드생성 계획 체크박스 S1~S7 [x]·Status 완료, code-summary 신규(`construction/u2-web-ui/code/cr-001-us-6.2-action-handoff-code-summary.md`), state·audit. 하위 에이전트 commit/push/rebase 미수행(주 에이전트만). **표준 2옵션 스테이지 완료 게이트(Request Changes / Continue) 제시 예정** + 남은 게이트: Build and Test(제품 전체 회귀).
+**Context**: CONSTRUCTION - U2 Code Generation(증분) Part 2 완료·검증 PASS·스테이지 승인 게이트
+
+---
