@@ -77,7 +77,9 @@ export default function CandidateList({
               {ev.unavailable ? (
                 <span className="cand-score--na">{ev.label}</span>
               ) : (
-                <span className="cand-score">{ev.label}</span>
+                <span className="cand-score" aria-label={`재사용성 점수 ${ev.label}`}>
+                  {ev.label}
+                </span>
               )}
               <span className="cand-caret" aria-hidden="true">
                 ▾
@@ -213,6 +215,7 @@ function CandidateDetail({
           className="btn btn--sm"
           onClick={() => onFeedback(c.candidateId, 'useful')}
           disabled={feedback.submitting}
+          aria-busy={feedback.submitting}
         >
           <span aria-hidden="true">👍</span> 유용함
         </button>
@@ -221,6 +224,7 @@ function CandidateDetail({
           className="btn btn--sm"
           onClick={() => onFeedback(c.candidateId, 'notFit')}
           disabled={feedback.submitting}
+          aria-busy={feedback.submitting}
         >
           <span aria-hidden="true">👎</span> 맞지 않음
         </button>
