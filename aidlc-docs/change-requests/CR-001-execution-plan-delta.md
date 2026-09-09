@@ -63,9 +63,10 @@
 | **U1 NFR Requirements** | ⬜ SKIP | — | Tech stack 확정(`tech-stack-decisions.md`)·Extension 설정 불변(delta §5). 신규 NFR은 NFR-8(비노출 확장)뿐이며 requirements delta에 이미 문서화 → 신규 NFR *요구* 도출 불요 |
 | **U1 NFR Design (증분)** | 🟠 EXECUTE | 증분 | 공개 DTO에 Action Prompt 추가(내부필드 비노출 유지), evidence-grounded(환각 금지) 패턴, demoMode 결정성, PBT 후보(Decision→Prompt 목적 매핑=순수·결정적) |
 | **Infrastructure Design** | ⬜ SKIP | — | mock/로컬, 클라우드 프로비저닝 없음(기존과 동일) |
-| **U1 Code Generation (증분)** | 🟠 EXECUTE (ALWAYS) | 증분 | `app/components/action_handoff.py`(C11), orchestrator C7 직후 호출, 공개 응답 DTO 확장, Decision 4종·grounding·비차단·비회귀 테스트, `code-summary.md` 갱신 |
-| **U2 (Web UI — 착수 시 Action Handoff 반영)** | 🟠 EXECUTE | (U2 전체 빌드) | U2 미구현 — base 플랜의 U2 빌드에 Action Prompt 표시 + Copy(성공/실패 구분) + Prompt 부재 시 기존 결과 유지 포함(US-6.2) |
-| **Build and Test** | 🟠 EXECUTE (ALWAYS) | — | U1(Action Handoff 포함) 빌드·테스트, 기존 U1 회귀 테스트 유지 + append-only 검증 |
+| **U1 Code Generation (증분)** | ✅ COMPLETED | 증분 | `app/components/action_handoff.py`(C11), orchestrator C7 직후 호출, 공개 응답 DTO 확장, Decision 4종·grounding·비차단·비회귀 테스트. **APPROVED + 통합·재검증 완료** |
+| **U2 UI Design (증분)** | 🟠 EXECUTE (NEW) | 증분 | **[정정 편입]** Action Handoff 표시·Copy의 **UI 상세 설계** — 화면 배치·정보 계층·상태(성공/실패/부재)·NEEDS REVIEW/DEVELOP 표현·반응형·키보드 접근성·기존 스타일 일관성 + 검토용 시안. 산출물 `CR-001-u2-ui-design.md`. **별도 승인 게이트**(Request Changes / Continue). ⚠️ AD(증분) D1의 *계약 + 표시 책임* 승인은 이 UI 상세 설계 승인으로 간주하지 않음. |
+| **U2 Code Generation (증분)** | 🟠 EXECUTE (ALWAYS) | 증분 | **U2 UI Design 승인 후** 코드 생성 계획 정합화 → 구현(`ActionHandoffTab.tsx` 신규 + `VerdictBanner.tsx`/`App.tsx`/`types.ts` 편집, 기존 시각언어 재사용) → tsc+build+데모 스모크. 산출물 `plans/u2-web-ui-cr-001-us-6.2-code-generation-plan.md`(정합화 예정) + code-summary. |
+| **Build and Test** | 🟠 EXECUTE (ALWAYS) | — | U2 Action Handoff 표시/Copy 검증(성공/실패/부재/NEEDS REVIEW) + 기존 U1+U2 회귀 유지 + append-only 검증 |
 
 ### 🟡 OPERATIONS PHASE
 - Operations — PLACEHOLDER
@@ -157,13 +158,15 @@ OPERATIONS PHASE
 
 ---
 
-## 5. Stages to Execute / Skip (요약)
+## 5. Stages to Execute / Skip (요약, 2026-09-09 정정)
 
-**EXECUTE (6)**: Application Design(증분) · U1 Functional Design(증분) · U1 NFR Design(증분) · U1 Code Generation(증분) · U2 표시/Copy · Build & Test.
+> **정정**: U2는 신규 빌드가 아니라 **이미 구현된 최신 UI(라이트 리디자인)에 증분 반영**이며, Action Handoff **표시**는 두 단계로 분리한다 — **① U2 UI Design(증분, 상세 UI 설계 게이트)** → **② U2 Code Generation(증분, 구현)**. AD(증분) D1의 *계약 + 표시 책임* 승인은 ①의 UI 상세 설계 승인을 대체하지 않는다.
+
+**남은 EXECUTE (3)**: **U2 UI Design(증분, NEW)** · U2 Code Generation(증분) · Build & Test.
 
 **SKIP (4)**: Units Generation(새 유닛 없음) · U1 NFR Requirements(tech stack·extension 불변) · Infrastructure Design(mock/로컬) · Reverse Engineering(Greenfield, N/A).
 
-**COMPLETED (3)**: Workspace Detection · Requirements Analysis(Minimal delta) · User Stories(증분).
+**COMPLETED (8)**: Workspace Detection · Requirements Analysis(Minimal delta) · User Stories(증분) · Application Design(증분: 계약 D1 + 표시 책임) · U1 Functional Design(증분) · U1 NFR Design(증분) · U1 Code Generation(증분) · U1 Build & Test.
 
 ---
 
