@@ -1,211 +1,242 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { api, ApiError } from './api/client'
 import type {
   AdviceResponse,
   ClarificationRequestDTO,
   FeedbackVerdict,
   PermissionContextDTO,
-  StructuredIntentDTO,
 } from './api/types'
-import { DEMO_PRESETS, ROLE_OPTIONS, type DemoPreset } from './demo/presets'
-import IntentPanel from './components/IntentPanel'
-import RankingPanel from './components/RankingPanel'
-import EvidencePanel from './components/EvidencePanel'
-import FeedbackBar from './components/FeedbackBar'
+import { EXAMPLE_PRESETS } from './demo/examples'
+import type { DemoPreset } from './demo/presets'
+import Header from './components/Header'
+import SearchHome from './components/SearchHome'
+import ProgressSteps from './components/ProgressSteps'
+import VerdictBanner from './components/VerdictBanner'
+import CandidateList, { type FeedbackState } from './components/CandidateList'
 
-const EMPTY_INTENT: StructuredIntentDTO = {
-  role: '',
-  goal: '',
-  function: '',
-  data: '',
-  output: '',
+type View = 'home' | 'result'
+// 진행 phase — 실제 호출 경계에 매핑(D3). clarify/error 는 진행바 대신 전용 UI.
+type Phase = 'understanding' | 'searching' | 'analyzing' | 'done' | 'clarify' | 'error'
+
+// 로그인 persona 표시(장식). /advise 기능 role 은 아래 context.role(유효 role) 사용.
+const ACCOUNT_PERSONA = 'DevRel'
+
+// 향후 SSO 연동 시 이 기본값 대신 로그인 사용자 권한/role 을 주입(단일 지점, D4/NFR-6).
+const DEFAULT_CONTEXT: PermissionContextDTO = { userId: 'demo-user', role: 'Sales' }
+
+const EMPTY_FEEDBACK: FeedbackState = {
+  submitting: false,
+  confirmationId: null,
+  confirmedCandidateId: null,
+  error: null,
 }
 
+const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
 export default function App() {
-  // ── 입력 / 구조화 상태 ──────────────────────────────────────────
-  const [rawText, setRawText] = useState('')
-  const [intent, setIntent] = useState<StructuredIntentDTO | null>(null)
+  const [view, setView] = useState<View>('home')
+  const [question, setQuestion] = useState('')
+  const [timestamp, setTimestamp] = useState('')
+  const [phase, setPhase] = useState<Phase>('understanding')
+  const [percent, setPercent] = useState(0)
+
   const [clarification, setClarification] = useState<ClarificationRequestDTO | null>(null)
-  const [context, setContext] = useState<PermissionContextDTO>({
-    userId: 'demo-user',
-    role: 'Sales',
-  })
-  const [intentLoading, setIntentLoading] = useState(false)
-
-  // ── 자문 결과 상태 ──────────────────────────────────────────────
   const [advice, setAdvice] = useState<AdviceResponse | null>(null)
-  const [adviseLoading, setAdviseLoading] = useState(false)
-  const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null)
+  const [openCandidateId, setOpenCandidateId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [feedback, setFeedback] = useState<FeedbackState>(EMPTY_FEEDBACK)
 
-  // ── 피드백 상태 ─────────────────────────────────────────────────
-  const [confirmationId, setConfirmationId] = useState<string | null>(null)
-  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false)
-  const [feedbackError, setFeedbackError] = useState<string | null>(null)
-
-  function resetResults() {
+  function goHome() {
+    setView('home')
+    setQuestion('')
+    setClarification(null)
     setAdvice(null)
-    setSelectedCandidateId(null)
-    setConfirmationId(null)
-    setFeedbackError(null)
+    setOpenCandidateId(null)
+    setError(null)
+    setFeedback(EMPTY_FEEDBACK)
+    setPercent(0)
   }
 
-  // ── /intent ─────────────────────────────────────────────────────
-  async function handleSubmitIntent() {
-    if (!rawText.trim()) {
-      setError('요청 내용을 입력하세요.')
-      return
-    }
-    setIntentLoading(true)
-    setError(null)
-    setIntent(null)
+  // 검색 제출 → /intent → /advise 자동 연속(D2). clarification 시에만 추가 질문 노출.
+  async function runSearch(rawText: string, context: PermissionContextDTO) {
+    setView('result')
+    setQuestion(rawText)
+    setTimestamp(formatNow())
     setClarification(null)
-    resetResults()
+    setAdvice(null)
+    setOpenCandidateId(null)
+    setError(null)
+    setFeedback(EMPTY_FEEDBACK)
+    setPhase('understanding')
+    setPercent(25)
+
     try {
-      const res = await api.submitIntent(rawText)
-      if (res.status === 'structured' && res.intent) {
-        setIntent(res.intent)
-      } else if (res.status === 'clarification' && res.clarification) {
-        setClarification(res.clarification)
-      } else {
-        setError('요청을 구조화하지 못했습니다. 다시 시도해 주세요.')
+      const intentRes = await api.submitIntent(rawText)
+
+      if (intentRes.status === 'clarification' && intentRes.clarification) {
+        setClarification(intentRes.clarification)
+        setPhase('clarify')
+        return
       }
+      if (intentRes.status !== 'structured' || !intentRes.intent) {
+        setError('요청을 구조화하지 못했습니다. 다시 시도해 주세요.')
+        setPhase('error')
+        return
+      }
+
+      const intent = intentRes.intent
+      setPhase('searching')
+      setPercent(55)
+      await delay(500) // 4단계 진행감을 위한 짧은 시각 전이(D3)
+
+      setPhase('analyzing')
+      setPercent(90) // /advise 대기 중 90% 유지
+
+      const adv = await api.advise({ intent, context })
+      setAdvice(adv)
+      const top = adv.ranking.find((c) => c.rank === 1) ?? adv.ranking[0]
+      setOpenCandidateId(top?.candidateId ?? null)
+      setPercent(100)
+      setPhase('done')
     } catch (e) {
       setError(messageOf(e))
-    } finally {
-      setIntentLoading(false)
+      setPhase('error')
     }
   }
 
-  function handleIntentFieldChange(field: keyof StructuredIntentDTO, value: string) {
-    setIntent((prev) => ({ ...(prev ?? EMPTY_INTENT), [field]: value }))
+  function handlePickExample(preset: DemoPreset) {
+    const context: PermissionContextDTO = { userId: preset.userId, role: preset.role }
+    void runSearch(preset.rawText, context)
   }
 
-  function handleSelectPreset(preset: DemoPreset) {
-    setRawText(preset.rawText)
-    setContext({ userId: preset.userId, role: preset.role })
-    setIntent(null)
-    setClarification(null)
-    resetResults()
-    setError(null)
-  }
-
-  // ── /advise ─────────────────────────────────────────────────────
-  const canAdvise = useMemo(
-    () => intent != null && context.userId.trim() !== '' && context.role.trim() !== '',
-    [intent, context],
-  )
-
-  async function handleAdvise() {
-    if (!intent) return
-    setAdviseLoading(true)
-    setError(null)
-    setConfirmationId(null)
-    setFeedbackError(null)
+  async function handleFeedback(candidateId: string, verdict: FeedbackVerdict) {
+    if (!advice) return
+    setFeedback((f) => ({ ...f, submitting: true, error: null }))
     try {
-      const res = await api.advise({ intent, context })
-      setAdvice(res)
-      // rank 필드가 정렬 순서의 원천 → 배열 위치가 아닌 rank === 1 후보를 선택(폴백: 첫 요소).
-      const top = res.ranking.find((c) => c.rank === 1) ?? res.ranking[0]
-      setSelectedCandidateId(top?.candidateId ?? null)
-    } catch (e) {
-      setAdvice(null)
-      setSelectedCandidateId(null)
-      setError(messageOf(e))
-    } finally {
-      setAdviseLoading(false)
-    }
-  }
-
-  // ── /feedback ───────────────────────────────────────────────────
-  async function handleFeedback(verdict: FeedbackVerdict) {
-    if (!advice || !selectedCandidateId) return
-    setFeedbackSubmitting(true)
-    setFeedbackError(null)
-    try {
-      const res = await api.submitFeedback({
-        resultId: advice.resultId,
-        candidateId: selectedCandidateId,
-        verdict,
+      const res = await api.submitFeedback({ resultId: advice.resultId, candidateId, verdict })
+      setFeedback({
+        submitting: false,
+        confirmationId: res.confirmationId,
+        confirmedCandidateId: candidateId,
+        error: null,
       })
-      setConfirmationId(res.confirmationId)
     } catch (e) {
-      setFeedbackError(messageOf(e))
-    } finally {
-      setFeedbackSubmitting(false)
+      setFeedback({
+        submitting: false,
+        confirmationId: null,
+        confirmedCandidateId: null,
+        error: messageOf(e),
+      })
     }
   }
 
-  // ── 파생 값 ─────────────────────────────────────────────────────
-  const selectedCandidate =
-    advice?.ranking.find((c) => c.candidateId === selectedCandidateId) ?? null
-  const selectedChain =
-    advice?.evidenceChains.find((c) => c.candidateId === selectedCandidateId) ?? null
+  const loading = phase === 'understanding' || phase === 'searching' || phase === 'analyzing'
+  const topCandidate = advice?.ranking.find((c) => c.rank === 1) ?? advice?.ranking[0] ?? null
 
   return (
     <div className="app">
-      <header className="app-header">
-        <h1 className="app-title">Rebuild or Reuse Advisor</h1>
-        <p className="app-subtitle">
-          자연어 요청 → 검색 · 비교 · 결정 · 근거를 한 화면에서
-        </p>
-      </header>
+      <Header account={ACCOUNT_PERSONA} onBrandClick={goHome} />
 
-      <main className="app-grid">
-        <section className="col col--intent">
-          <IntentPanel
-            rawText={rawText}
-            onRawTextChange={setRawText}
-            onSubmitIntent={handleSubmitIntent}
-            intentLoading={intentLoading}
-            intent={intent}
-            onIntentFieldChange={handleIntentFieldChange}
-            clarification={clarification}
-            context={context}
-            onContextChange={setContext}
-            roleOptions={ROLE_OPTIONS}
-            presets={DEMO_PRESETS}
-            onSelectPreset={handleSelectPreset}
-            onAdvise={handleAdvise}
-            adviseLoading={adviseLoading}
-            canAdvise={canAdvise}
-            error={error}
-          />
-        </section>
+      {view === 'home' ? (
+        <SearchHome
+          examples={EXAMPLE_PRESETS}
+          onSearch={(text) => void runSearch(text, DEFAULT_CONTEXT)}
+          onPickExample={handlePickExample}
+        />
+      ) : (
+        <main className="result">
+          <button type="button" className="back-btn" onClick={goHome}>
+            <span aria-hidden="true">←</span> 새 질문하기
+          </button>
 
-        <section className="col col--ranking">
-          <RankingPanel
-            ranking={advice?.ranking ?? []}
-            overallDecision={advice?.overallDecision ?? null}
-            overallRationale={advice?.overallRationale ?? ''}
-            isRecommendation={advice?.isRecommendation ?? false}
-            selectedCandidateId={selectedCandidateId}
-            onSelectCandidate={setSelectedCandidateId}
-            hasResult={advice != null}
-            loading={adviseLoading}
-          />
-          <FeedbackBar
-            candidate={selectedCandidate}
-            onFeedback={handleFeedback}
-            confirmationId={confirmationId}
-            submitting={feedbackSubmitting}
-            error={feedbackError}
-          />
-        </section>
+          <p className="myquestion-label">내 질문</p>
+          <div className="myquestion">
+            <h1 className="myquestion-text">{question}</h1>
+            {timestamp && <span className="myquestion-time">{timestamp}</span>}
+          </div>
 
-        <section className="col col--evidence">
-          <EvidencePanel candidate={selectedCandidate} chain={selectedChain} />
-        </section>
-      </main>
+          {loading && <ProgressSteps activeStep={stepOf(phase)} percent={percent} />}
+
+          {phase === 'clarify' && clarification && (
+            <div className="clarify" role="status">
+              <p className="clarify-title">요청 정보가 조금 더 필요합니다</p>
+              {clarification.missingFields.length > 0 && (
+                <p className="clarify-hint">
+                  누락된 항목: {clarification.missingFields.join(', ')}
+                </p>
+              )}
+              <ul className="clarify-q">
+                {clarification.questions.map((q, i) => (
+                  <li key={i}>{q}</li>
+                ))}
+              </ul>
+              <p className="clarify-hint">
+                ‘새 질문하기’로 돌아가 위 내용을 보완해 다시 질문해 주세요.
+              </p>
+            </div>
+          )}
+
+          {phase === 'error' && error && (
+            <div className="alert alert--error" role="alert">
+              {error}
+            </div>
+          )}
+
+          {phase === 'done' && advice && (
+            <>
+              <VerdictBanner
+                decision={advice.overallDecision}
+                rationale={advice.overallRationale}
+                isRecommendation={advice.isRecommendation}
+                topCandidateName={topCandidate?.assetName ?? null}
+                topScorePercent={scorePercent(topCandidate)}
+              />
+              <CandidateList
+                ranking={advice.ranking}
+                chains={advice.evidenceChains}
+                openCandidateId={openCandidateId}
+                onToggle={(id) =>
+                  setOpenCandidateId((cur) => (cur === id ? null : id))
+                }
+                onFeedback={handleFeedback}
+                feedback={feedback}
+              />
+            </>
+          )}
+        </main>
+      )}
     </div>
   )
 }
 
+function stepOf(phase: Phase): number {
+  switch (phase) {
+    case 'understanding':
+      return 0
+    case 'searching':
+      return 1
+    case 'analyzing':
+      return 2
+    default:
+      return 3
+  }
+}
+
+function scorePercent(c: { evaluationStatus: string; reusabilityScore?: number | null } | null) {
+  if (!c || c.evaluationStatus === 'UNAVAILABLE' || c.reusabilityScore == null) return null
+  return Math.round(c.reusabilityScore * 100)
+}
+
+function formatNow(): string {
+  const d = new Date()
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mm = String(d.getMinutes()).padStart(2, '0')
+  return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}. ${hh}:${mm}`
+}
+
 function messageOf(e: unknown): string {
   if (e instanceof ApiError) {
-    return e.requestId
-      ? `${e.message} (${e.code} · ${e.requestId})`
-      : `${e.message} (${e.code})`
+    return e.requestId ? `${e.message} (${e.code} · ${e.requestId})` : `${e.message} (${e.code})`
   }
   return '알 수 없는 오류가 발생했습니다.'
 }
