@@ -3,6 +3,7 @@
 > CONSTRUCTION - Functional Design (U1). 기술 중립 도메인 모델. 구체 기술스택/직렬화 형식은 NFR 단계에서 확정.
 > 결정 반영: Q1(Score 0.0~1.0), Q2/Q5(evidenceSufficient + 임계 env 변수화), Q3(N=3), Q4·FU2(Overall=최고 Score 후보 State), Q6·FU1(랭킹 State→Score→name), Q8(mock 범위), Q9(feedback).
 > Minimal 정합 개정(2026-09-09): mock/adapter-contract 정합을 위해 **Evidence 엔티티 도입**(한 Asset이 다중 Source Evidence 보유), Asset에 핵심 구조화 필드(capabilities/lifecycle_status/constraints) 추가, Candidate를 **asset 단위**로 조정, EvidenceChain을 실제 Evidence 레코드에서 구성. 권한은 A-2(per-asset allowedRoles/allowedUsers) 유지 — Source-level 권한 레이어 없음(mock의 source-level 예시는 superseded).
+> **NFR Design §7.1 반영(Code Gen, 2026-09-09)**: C5 부분 실패 계약(evaluationStatus)에 맞춰 **VerifiedCandidate/RankedCandidate에 `evaluationStatus(COMPLETED|UNAVAILABLE)` 추가**, `reusabilityScore`를 **nullable**로 변경(UNAVAILABLE→null), UNAVAILABLE 내부 기술사유는 **서버 내부 전용 필드**(공개 DTO 미포함)로 분리. UNAVAILABLE→candidateState 항상 NEEDS_REVIEW. UI 문구/표시는 범위 밖(추후).
 
 ---
 
@@ -108,33 +109,43 @@ VerifiedCandidate[] + states + PermissionContext ─(C7)─> EvidenceChain[] (Ca
 
 > **경계 규칙(FR-8/NFR-4)**: ExcludedCandidate는 **서버 내부 로깅/감사 용도로만** 사용한다. 미인가 자산의 id·name·link·summary·rawMeta·Evidence는 **어떤 공개 API 응답에도 포함하지 않는다**. 권한 필터링은 기본 동작이므로 AdviceResult에는 제외 관련 정보를 **일절 노출하지 않는다**(플래그·개수 포함, §2.12).
 
-### 2.7 VerifiedCandidate (C5 재검증 산출)
+### 2.7 VerifiedCandidate (C5 재검증 산출) — **evaluationStatus 계약 반영(§7.1)**
 | Field | 개념 타입 | 설명 |
 |---|---|---|
 | candidate | Candidate | 원 후보 |
-| reusabilityScore | number(0.0~1.0, 소수 둘째) | 재사용성 점수 (Q1) |
-| reasoning | string | 판단 근거(Role/Task 맥락 반영 서술) |
-| roleTaskContextNote | string | Role/Task 맥락 반영 여부 명시(US-3.1 AC) |
-| evidenceSufficient | boolean | 근거 충분성 (false → NEEDS REVIEW 강제, Q5/US-3.3) |
-| insufficiencyReason | string? | evidenceSufficient=false일 때 부족/상충 사유 |
+| evaluationStatus | EvaluationStatus (`COMPLETED`\|`UNAVAILABLE`) | LLM 재검증 결과 상태. COMPLETED=정상 완료(근거 부족 NEEDS_REVIEW 포함), UNAVAILABLE=기술적 평가 실패 |
+| reusabilityScore | number(0.0~1.0, 소수 둘째) **\| null** | 재사용성 점수 (Q1). **UNAVAILABLE이면 `null`** (P11). |
+| reasoning | string | 판단 근거(Role/Task 맥락 반영 서술). UNAVAILABLE은 일반적 '평가 미완료' 서술만 |
+| roleTaskContextNote | string | Role/Task 맥락 반영 여부 명시(US-3.1 AC). COMPLETED에 한함 |
+| evidenceSufficient | boolean | 근거 충분성 (false → NEEDS REVIEW 강제, Q5/US-3.3). COMPLETED에만 유효 |
+| insufficiencyReason | string? | evidenceSufficient=false일 때 부족/상충 사유(공개 가능한 비즈니스 사유) |
+| technicalFailureReason | string? — ⚠️ **서버 내부 전용** | UNAVAILABLE의 기술적 실패 사유(`TECHNICAL_FAILURE` 코드/예외 메시지). **공개 DTO 미포함**(§1.4/§7.1) |
+
+> **evaluationStatus ↔ score/state 정합(P11)**: `UNAVAILABLE ⇔ reusabilityScore=null ∧ candidateState=NEEDS_REVIEW`; `COMPLETED ⇔ reusabilityScore ∈ [0,1] ∧ candidateState=기존 BR-STATE`. 기술 실패 NEEDS_REVIEW(UNAVAILABLE)와 근거 부족 NEEDS_REVIEW(COMPLETED)는 evaluationStatus로 구분한다.
 
 ### 2.8 CandidateState (열거 — 후보 단위)
 `REUSE` | `EXTEND_EXISTING` | `NEEDS_REVIEW`  — 후보 단위엔 DEVELOP 없음.
 
+### 2.8b EvaluationStatus (열거 — 후보 재검증 상태, §7.1)
+`COMPLETED` | `UNAVAILABLE`. COMPLETED=LLM 재검증 정상 완료(근거 부족 NEEDS_REVIEW 포함), UNAVAILABLE=기술적 평가 실패(score=null, state=NEEDS_REVIEW). 공개 DTO에는 상태값과 일반적 '평가 미완료' 문구만 노출.
+
 ### 2.9 OverallDecision (열거 — 요청 단위)
 `REUSE` | `EXTEND_EXISTING` | `NEEDS_REVIEW` | `DEVELOP`
 
-### 2.10 RankedCandidate (표현용 — 랭킹 1행)
+### 2.10 RankedCandidate (표현용 — 랭킹 1행) — **evaluationStatus 노출(§7.2)**
 | Field | 개념 타입 | 설명 |
 |---|---|---|
 | candidateId | string | 후보 id |
 | sources | SourceId[] | 출처 목록(다중 Source) |
 | assetName | string | 자산명 |
 | lifecycleStatus | enum | 자산 상태(표시) |
-| reusabilityScore | number | 점수 |
-| candidateState | CandidateState | 후보 State |
+| evaluationStatus | EvaluationStatus (`COMPLETED`\|`UNAVAILABLE`) | 재검증 상태(공개 노출; UNAVAILABLE은 '평가 미완료') |
+| reusabilityScore | number **\| null** | 점수. **UNAVAILABLE이면 `null`** |
+| candidateState | CandidateState | 후보 State (UNAVAILABLE → NEEDS_REVIEW) |
 | capabilityMatch | string | 역량 매칭 요약(FR-6; intent.function 대비 자산 역량 적합 서술) |
-| rank | int | 정렬 후 순위(1-based) |
+| rank | int | 정렬 후 순위(1-based). 랭킹: COMPLETED(State→Score→name) 먼저, UNAVAILABLE(name→candidateId) 뒤(§7.3/BR-RANK) |
+
+> **공개 노출 한정(§7.2)**: RankedCandidate는 공개 DTO의 원천이나, `technicalFailureReason` 등 내부 기술 사유는 **투영하지 않는다**. 공개 DTO는 evaluationStatus·nullable score·일반 '평가 미완료' 문구까지만 노출.
 
 ### 2.11 EvidenceChain (C7)
 | Field | 개념 타입 | 설명 |
