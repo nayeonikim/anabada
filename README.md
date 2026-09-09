@@ -76,6 +76,8 @@ EDM ──────────┘
 
 ## Demo
 
+![ANABADA Demo](docs/demo/demo.gif)
+
 기본 실행은 **Demo Mode**입니다. 실제 AWS 호출 없이 결정적 Fixture를 사용하므로 심사와 Demo Media에서 동일한 결과를 안정적으로 재현할 수 있습니다.
 
 ### Hero Scenario
