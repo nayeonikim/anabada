@@ -58,15 +58,17 @@ export default function App() {
     }
     setIntentLoading(true)
     setError(null)
+    setIntent(null)
+    setClarification(null)
     resetResults()
     try {
       const res = await api.submitIntent(rawText)
       if (res.status === 'structured' && res.intent) {
         setIntent(res.intent)
-        setClarification(null)
       } else if (res.status === 'clarification' && res.clarification) {
         setClarification(res.clarification)
-        setIntent(null)
+      } else {
+        setError('요청을 구조화하지 못했습니다. 다시 시도해 주세요.')
       }
     } catch (e) {
       setError(messageOf(e))
@@ -103,7 +105,9 @@ export default function App() {
     try {
       const res = await api.advise({ intent, context })
       setAdvice(res)
-      setSelectedCandidateId(res.ranking.length > 0 ? res.ranking[0].candidateId : null)
+      // rank 필드가 정렬 순서의 원천 → 배열 위치가 아닌 rank === 1 후보를 선택(폴백: 첫 요소).
+      const top = res.ranking.find((c) => c.rank === 1) ?? res.ranking[0]
+      setSelectedCandidateId(top?.candidateId ?? null)
     } catch (e) {
       setAdvice(null)
       setSelectedCandidateId(null)
@@ -199,7 +203,9 @@ export default function App() {
 
 function messageOf(e: unknown): string {
   if (e instanceof ApiError) {
-    return e.requestId ? `${e.message} (${e.code})` : e.message
+    return e.requestId
+      ? `${e.message} (${e.code} · ${e.requestId})`
+      : `${e.message} (${e.code})`
   }
   return '알 수 없는 오류가 발생했습니다.'
 }

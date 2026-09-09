@@ -15,18 +15,11 @@ export function stateBadge(state: string): { label: string; className: string } 
 }
 
 export function overallBadge(decision: string): { label: string; className: string } {
-  switch (decision) {
-    case 'REUSE':
-      return { label: '재사용 (REUSE)', className: 'badge badge--reuse' }
-    case 'EXTEND_EXISTING':
-      return { label: '확장 (EXTEND)', className: 'badge badge--extend' }
-    case 'NEEDS_REVIEW':
-      return { label: '검토 필요 (NEEDS REVIEW)', className: 'badge badge--review' }
-    case 'DEVELOP':
-      return { label: '신규 개발 (DEVELOP)', className: 'badge badge--develop' }
-    default:
-      return { label: decision, className: 'badge' }
+  // REUSE/EXTEND_EXISTING/NEEDS_REVIEW 는 stateBadge 와 동일 → 위임하고 DEVELOP 만 특수 처리.
+  if (decision === 'DEVELOP') {
+    return { label: '신규 개발 (DEVELOP)', className: 'badge badge--develop' }
   }
+  return stateBadge(decision)
 }
 
 export function lifecycleBadge(status: string): { label: string; className: string } {
