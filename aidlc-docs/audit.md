@@ -282,3 +282,34 @@
 **User Input**: "일부 실패 시 Overall은: 평가 완료된 REUSE/EXTEND 후보가 있으면 완료된 후보만으로 기존 Overall 규칙을 적용합니다. REUSE/EXTEND 후보가 없고 실패 후보가 있으면 NEEDS_REVIEW입니다. 아직 평가하지 못한 후보가 있으므로 DEVELOP으로 단정하지 않습니다. 실패 후보는 평가 완료 후보 뒤에 배치하고, 공개 설명에는 평가를 완료하지 못했다는 사실만 담습니다. 예외 메시지나 내부 기술 코드는 서버 로그에만 남깁니다. UI 표현은 추후 결정합니다. 이 내용에 대한 PBT 변경 명세가 nfr-design-patterns.md에 반영되지 않은 것 같아."
 **AI Response**: 기존 §7.4가 실제 business-rules P1~P9와 오매핑(랭킹을 P5로 잘못 지칭)됨을 확인. business-rules.md 재확인: P5="(접근가능0)∨(REUSE/EXTEND 0)⇒DEVELOP" → 새 계약과 정면 충돌(UNAVAILABLE로 REUSE/EXTEND=0이면 DEVELOP 강제), P8=랭킹 순열·결정성. §7.4 전면 재작성: P1(UNAVAILABLE⇒NEEDS_REVIEW 추가), P2/P3/P4(COMPLETED에만 적용), **P5 개정(DEVELOP은 UNAVAILABLE 0일 때만; UNAVAILABLE 존재∧COMPLETED REUSE/EXTEND 0⇒NEEDS_REVIEW)**, P6(COMPLETED 기준), P7(유지), **P8 개정(UNAVAILABLE을 COMPLETED 뒤 배치·name→candidateId·점수비교 제외, 순열/결정성 유지)**, P9(유지). 신규 **P10(기술실패↛DEVELOP)**, **P11(score-status 정합: UNAVAILABLE⇔null, COMPLETED⇔[0,1])** 추가. C6 순수·결정성 유지 명시. Awaiting approval.
 **Context**: CONSTRUCTION - NFR Design U1 (Request Changes 반영 — 재검토 대기)
+
+## NFR Design (U1) — APPROVED
+**Timestamp**: 2026-09-09T00:00:00Z
+**AI Prompt**: "NFR Design (U1) complete. Request Changes / Continue to Next Stage (Code Generation; Infrastructure Design SKIP)?"
+**User Input**: "승인할게"
+**AI Response**: U1 NFR Design approved (nfr-design-patterns.md + logical-components.md, incl. Q1=C evaluationStatus 계약, PBT P1~P11 갱신). Marked NFR Design [x], Infrastructure Design [x] SKIP in aidlc-state.md, set Code Generation IN PROGRESS. Proceeding to CONSTRUCTION - U1 Code Generation Part 1 (Planning).
+**Context**: CONSTRUCTION - NFR Design U1 (APPROVED) → Code Generation U1 (Part 1 Planning)
+
+## Code Generation (U1) — Part 1 (Plan Created)
+**Timestamp**: 2026-09-09T00:00:00Z
+**AI Response**: Entered CONSTRUCTION - Code Generation for U1 (Part 1 Planning). Loaded code-generation rule + all U1 design artifacts (domain-entities, business-rules, business-logic-model, nfr-design-patterns §1~§7, logical-components, tech-stack-decisions D1~D8) + mock/ data structure + unit-of-work-story-map. Created aidlc-docs/construction/plans/u1-advisor-backend-code-generation-plan.md: Part A(유닛 컨텍스트·스토리 US-1.1~US-4.3·의존·스택), Part B(Greenfield 프로젝트 구조 advisor-backend/ 트리 + per-asset 권한 정합 mock 재작성 지시), Part C(11 numbered steps w/ checkboxes: 구조셋업/Config·Logging/도메인모델/Repo·Store·Adapters/LLMClient·Fixture/Mock데이터/C6+PBT P1~P11/C1~C5·C7·C8/S1 Orchestrator/API·공개DTO·오류매핑/문서), Part D(스토리↔스텝 트레이스). NFR Design 계약(evaluationStatus·nullable score·공개 DTO 분리·§1.6 오류매핑·demoMode) 반영.
+**AI Prompt**: "Code Generation Plan (U1) 완료. 이 계획대로 코드를 생성해도 될까요? Request Changes / 승인 후 Part 2(Generation) 진행?"
+**Context**: CONSTRUCTION - Code Generation U1 (Part 1 — plan created, awaiting approval)
+
+## Code Generation (U1) — Part 1 (Plan Revision: §7.5 기능설계 정합 스텝 추가)
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "B"
+**AI Response**: 사용자 질의(NFR Design §7.5 갱신을 Code Gen에서 하기로 했는지) 확인 → §7.5가 "7.1~7.4를 domain-entities.md/business-rules.md/business-logic-model.md에 Code Gen 시 반영"으로 명시함을 확인. 계획서가 코드 스텝(Step 3/7/10)에는 §7.1~7.4를 담지만 상위 기능설계 문서 3개 갱신 스텝이 누락됨을 지적, 옵션 제시. User=B(문서도 §7.1~7.4에 맞게 갱신하는 스텝 추가). 계획서에 Step 0(기능설계 산출물 정합 §7.5) 추가: domain-entities.md(evaluationStatus·nullable score·내부 기술사유 분리), business-rules.md(BR-STATE/BR-OVERALL/BR-RANK 정제 + P1~P11), business-logic-model.md(C5/C6/C7 흐름·실패 매트릭스·§1.6 오류) 갱신. 총 스텝 11→12. Part D 트레이스 + 실행 원칙 갱신. Awaiting approval.
+**Context**: CONSTRUCTION - Code Generation U1 (Part 1 — plan revised per §7.5, awaiting approval)
+
+## Code Generation (U1) — Part 1 APPROVED → Part 2 (Generation) 시작
+**Timestamp**: 2026-09-09T00:00:00Z
+**AI Prompt**: "이 개정된 계획(Step 0~11, 총 12스텝)을 검토해 주세요: 1) Request Changes 2) Continue to Next Stage"
+**User Input**: "2"
+**AI Response**: Code Generation Plan (U1) 승인됨. aidlc-state.md Code Generation IN PROGRESS(Part 2 Generation) 갱신. Part 2 실행 시작 — Step 0(기능설계 산출물 §7.5 정합)부터 순차 실행.
+**Context**: CONSTRUCTION - Code Generation U1 (Part 2 — Generation 실행)
+
+## Code Generation (U1) — Part 2: Step 0 완료 (기능설계 §7.5 정합)
+**Timestamp**: 2026-09-09T00:00:00Z
+**AI Response**: Step 0 실행 완료 — 기능설계 3개 문서를 NFR Design §7.1~7.4에 맞게 갱신. (1) domain-entities.md: EvaluationStatus 열거(2.8b) 신설, VerifiedCandidate(2.7)에 evaluationStatus·nullable reusabilityScore·technicalFailureReason(내부 전용)·P11 정합 노트 추가, RankedCandidate(2.10)에 evaluationStatus·nullable score + 공개 비노출 노트, 헤더 §7.1 근거 주석. (2) business-rules.md: BR-STATE(UNAVAILABLE⇒NEEDS_REVIEW, COMPLETED만 Score 판정), BR-OVERALL(기술실패↛DEVELOP, UNAVAILABLE∧REUSE/EXTEND0⇒NEEDS_REVIEW), BR-RANK(2계층: COMPLETED[State→Score→name]→UNAVAILABLE[name→candidateId]) 정제, PBT 표 P1~P11(P5·P8 개정·P10·P11 신규), 트레이스 P1~P11 갱신, 헤더 근거 주석. (3) business-logic-model.md: §3 step4(reverify COMPLETED/UNAVAILABLE 분기·전체실패 신호)·step5(BR-STATE/BR-OVERALL 정제)·step6(UNAVAILABLE '평가 미완료'만)·step7(2계층 랭킹), §5 LLM 표 문구 정정(fixture=demoMode 경로), §6 실패 매트릭스+§1.6 HTTP↔code 매핑 재작성, 헤더 근거 주석. 계획서 Step 0 체크박스 4개 [x]. 다음: Step 1(프로젝트 구조 셋업).
+**Context**: CONSTRUCTION - Code Generation U1 (Part 2 — Step 0 완료)
