@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-09-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - U1 APPROVED. U2(Web UI) Code Generation 완료 — React+Vite+TS, `npm run build` 성공(38 modules, strict 오류 0); Code Generation 2-옵션 승인 대기(Request Changes / Continue → Build and Test). 이후 Build and Test에 U2 추가 예정.
+- **Current Stage**: OPERATIONS (placeholder) — CONSTRUCTION 전 단계 완료·승인. Build and Test APPROVED(제품 전체 U1+U2): U1 44/44·coverage 92%, U2 tsc strict 0 + vite build 38 modules, 통합 A 4/4. 사용자 승인 2026-09-09. Operations는 향후 배포/모니터링 확장을 위한 placeholder.
 - **Discovery Input**: docs/aidlc/discovery-input.md (sole Evidence/input source per user constraint)
 
 ## Workspace State
@@ -45,13 +45,13 @@
 - [x] Infrastructure Design — SKIPPED (mock data, no cloud provisioning for MVP)
 - [x] Code Generation — U1 APPROVED (Steps 0~11, 12/12)
 - [x] Build and Test — U1 APPROVED (44/44 pass, coverage 92%) — 사용자 승인 2026-09-09.
-- [~] U2 Web UI per-unit loop (fast-path):
+- [x] U2 Web UI per-unit loop (fast-path):
   - [x] Functional/NFR/Infra 설계 — 압축(U1 API 계약 + application-design 재사용, 신규 도메인/NFR/인프라 없음)
-  - [x] Code Generation — 완료(React+Vite+TS, 13/13 steps; `npm run build` 성공, strict 오류 0). 2-옵션 승인 대기.
-  - [ ] Build and Test — U2 추가(타입체크/빌드는 통과, 4 시나리오 실 렌더링은 데모 단계)
+  - [x] Code Generation — APPROVED(React+Vite+TS, 13/13 steps; `npm run build` 성공, strict 오류 0). 사용자 승인 2026-09-09.
+- [x] Build and Test — APPROVED(제품 전체 U1+U2, 사용자 승인 2026-09-09): U1 44/44·92%, U2 tsc strict 0 + vite build 38 modules, 통합 A 4/4. 아티팩트: build/unit/integration(Part A+B)/performance/e2e(신규)/summary. Part B 실 렌더링·성능·실 LLM은 데모/Operations 단계.
 
 ### 🟡 OPERATIONS PHASE
-- [ ] Operations — PLACEHOLDER
+- [ ] Operations — PLACEHOLDER (향후 배포/모니터링 확장 대상; CONSTRUCTION 완료로 현재 진입 지점)
 
 ## Open Decisions (carried forward)
 - **A-2**: 권한별 Source 노출 세부 정책 → **RESOLVED (Application Design Q4=A)**: per-asset 권한 모델(allowedRoles/allowedUsers), Source-level 정책 레이어 없음.
