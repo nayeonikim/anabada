@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-09-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - Build and Test (U1) 완료 — 44/44 tests pass, coverage 92%; awaiting approval (Request Changes / Approve & Continue → Operations). U2(Web UI) 코드 생성 pending.
+- **Current Stage**: CONSTRUCTION - U1 APPROVED. U2(Web UI) Code Generation 완료 — React+Vite+TS, `npm run build` 성공(38 modules, strict 오류 0); Code Generation 2-옵션 승인 대기(Request Changes / Continue → Build and Test). 이후 Build and Test에 U2 추가 예정.
 - **Discovery Input**: docs/aidlc/discovery-input.md (sole Evidence/input source per user constraint)
 
 ## Workspace State
@@ -44,7 +44,11 @@
 - [x] NFR Design — U1 APPROVED (nfr-design-patterns.md + logical-components.md; Q1=C evaluationStatus 계약, PBT P1~P11)
 - [x] Infrastructure Design — SKIPPED (mock data, no cloud provisioning for MVP)
 - [x] Code Generation — U1 APPROVED (Steps 0~11, 12/12)
-- [~] Build and Test — U1 완료 (44/44 pass, coverage 92%); awaiting approval → Operations. U2 Web UI pending.
+- [x] Build and Test — U1 APPROVED (44/44 pass, coverage 92%) — 사용자 승인 2026-09-09.
+- [~] U2 Web UI per-unit loop (fast-path):
+  - [x] Functional/NFR/Infra 설계 — 압축(U1 API 계약 + application-design 재사용, 신규 도메인/NFR/인프라 없음)
+  - [x] Code Generation — 완료(React+Vite+TS, 13/13 steps; `npm run build` 성공, strict 오류 0). 2-옵션 승인 대기.
+  - [ ] Build and Test — U2 추가(타입체크/빌드는 통과, 4 시나리오 실 렌더링은 데모 단계)
 
 ### 🟡 OPERATIONS PHASE
 - [ ] Operations — PLACEHOLDER

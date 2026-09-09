@@ -341,3 +341,22 @@
 **Context**: CONSTRUCTION - Build and Test U1 완료, 승인 대기
 
 ---
+
+## Build and Test (U1) — Approved & U2 Kickoff
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "승인하고 U2를 시작할게. U2는 병렬로 수행할 수 있으면 병렬로 진행해줘 너무 느려1"
+**AI Response**: U1 Build & Test 승인 처리 — aidlc-state.md Build and Test [x] APPROVED로 갱신. 사용자 요청(속도/병렬)에 따라 U2 Web UI per-unit 루프를 fast-path로 진행: U2는 U1의 확정된 3개 HTTP API(/intent·/advise·/feedback)와 공개 DTO에만 의존하는 단일 화면(NFR-6) thin UI이므로, Functional/NFR/Infra 설계 단계는 application-design(unit-of-work.md, components.md) + U1 API 계약 재사용으로 압축하고 Code Generation에 집중. 병렬화 가능 여부/프론트엔드 스택 결정을 위해 사용자에게 확인 예정.
+**Context**: CONSTRUCTION - Build and Test U1 APPROVED → U2 Web UI (fast-path)
+
+---
+
+## Code Generation (U2 Web UI) — fast-path 실행
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: (동일 요청 하 진행 — "승인하고 U2를 시작할게. U2는 병렬로 수행할 수 있으면 병렬로 진행해줘 너무 느려1")
+**AI Response**: U2 Code Generation fast-path 실행. 스택=React18+Vite5+TypeScript(strict, 사용자 선택). 계획서 `plans/u2-web-ui-code-generation-plan.md`(Step 0~13) 생성. 공유 파운데이션(직렬) 작성: package.json/vite.config.ts(dev proxy /intent·/advise·/feedback→:8000)/tsconfig/index.html/main.tsx, api/types.ts(U1 DTO 미러, §3.2 제외필드 부재), api/client.ts(fetch+ApiError, 오류모델 {error:{code,message,requestId}}), styles.css(디자인 시스템), components/panel-props.ts+badges.ts(계약/헬퍼), App.tsx(intent→advise→feedback 상태), demo/presets.ts(U1 demo_fixtures rawText 자동 추출). 4개 패널을 subagent(sonnet)로 병렬 생성 시도 → Bedrock IAM explicit deny(403, sonnet inference-profile) 4건 모두 실패 → 계약 확정 상태라 메인이 직접 작성: IntentPanel/RankingPanel/EvidencePanel/FeedbackBar. `npm install`(exit 0) + `npm run build`(tsc --noEmit && vite build) 성공(38 modules, strict 오류 0, dist 생성). code-summary.md(u2-web-ui/code) 작성, aidlc-state 갱신.
+**Files Generated**: frontend/{package.json, vite.config.ts, tsconfig.json, tsconfig.node.json, index.html, README.md, src/main.tsx, src/App.tsx, src/styles.css, src/api/types.ts, src/api/client.ts, src/demo/presets.ts, src/components/{panel-props.ts, badges.ts, IntentPanel.tsx, RankingPanel.tsx, EvidencePanel.tsx, FeedbackBar.tsx}}; aidlc-docs/construction/u2-web-ui/code/code-summary.md; plans/u2-web-ui-code-generation-plan.md
+**AI Prompt**: "U2 Code Generation 완료(build 성공). 1) Request Changes 2) Continue to Next Stage → Build and Test(U2 통합)"
+**Context**: CONSTRUCTION - Code Generation U2 완료, 승인 대기
+**Note**: 병렬 subagent 실패 원인은 sonnet 모델 Bedrock 권한(403 explicit deny). 향후 subagent 병렬화는 허용 모델로만 수행할 것.
+
+---
