@@ -90,17 +90,21 @@ EDM ──────────┘
 
 ## Product UI
 
-React 기반 단일 화면에서 전체 판단 흐름을 확인할 수 있습니다.
+React 기반 단일 컬럼 UI로, 검색 → 결과 두 화면에서 전체 판단 흐름을 확인할 수 있습니다.
 
 ```text
-┌─────────────────────┬────────────────────────┬─────────────────────┐
-│ Request & Intent    │ Ranking & Decision     │ Evidence Chain      │
-│ Natural language   │ Overall Decision       │ Why this decision?  │
-│ Structured Intent  │ Ranked Candidates      │ Source Evidence     │
-└─────────────────────┴────────────────────────┴─────────────────────┘
+[Home]
+ 자연어 검색창 + 예시 시나리오
+        │  (검색)
+        ▼
+[Result]  단일 컬럼, 위 → 아래
+ 내 질문 (입력 echo)
+ → 진행 스텝: 질문 이해 → 검색 → 분석
+ → Overall Decision 배너 (REUSE / EXTEND EXISTING / DEVELOP / NEEDS REVIEW + 요약)
+ → 후보 랭킹 카드 (펼치면 판단 근거 / 적합도 분석 / 참고 자료)
 ```
 
-사용자는 자연어 요청을 입력한 뒤 구조화된 Intent를 확인하고, 후보 랭킹·재사용성 판단·근거를 한 화면에서 검토할 수 있습니다.
+사용자는 자연어 요청을 입력하면 결과 화면에서 진행 상황, Overall Decision, 후보 랭킹과 각 후보의 근거를 순서대로 확인할 수 있습니다.
 
 ## Architecture
 
