@@ -15,7 +15,7 @@ export default function RankingPanel({
     return (
       <div className="panel">
         <h2 className="panel-title">후보 랭킹 & 종합 권고</h2>
-        <p className="loading">분석 중…</p>
+        <p className="loading" role="status">분석 중…</p>
       </div>
     )
   }
@@ -60,7 +60,16 @@ export default function RankingPanel({
             <div
               key={c.candidateId}
               className={selected ? 'card card--selected' : 'card'}
+              role="button"
+              tabIndex={0}
+              aria-pressed={selected}
               onClick={() => onSelectCandidate(c.candidateId)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onSelectCandidate(c.candidateId)
+                }
+              }}
             >
               <div className="card-head">
                 <span className="card-rank">#{c.rank}</span>
@@ -71,7 +80,9 @@ export default function RankingPanel({
                 {ev.unavailable ? (
                   <span className="score--unavailable">{ev.label}</span>
                 ) : (
-                  <span className="score">{ev.label}</span>
+                  <span className="score" title="재사용성 점수">
+                    재사용성 {ev.label}
+                  </span>
                 )}
                 <span className={lifecycle.className}>{lifecycle.label}</span>
                 <span className="capability-match">{c.capabilityMatch}</span>
