@@ -360,3 +360,11 @@
 **Note**: 병렬 subagent 실패 원인은 sonnet 모델 Bedrock 권한(403 explicit deny). 향후 subagent 병렬화는 허용 모델로만 수행할 것.
 
 ---
+
+## Code Generation (U2) — Approved → Build and Test (U2 통합)
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "2"
+**AI Response**: U2 Code Generation 2-옵션 중 "2) Continue to Next Stage" 선택 → 승인 처리. Build and Test 단계에 U2 반영: (1) `npm run build` 재검증(38 modules 성공, strict 오류 0). (2) build-instructions.md에 U2 빌드 섹션 추가(Node/npm, install/typecheck/build/preview). (3) unit-test-instructions.md에 U2 정적 게이트(tsc --noEmit strict) 추가 — U2는 별도 테스트 프레임워크 없이 타입체크+빌드가 컴포넌트 게이트. (4) integration-test-instructions.md에 U1↔U2 계약/통합 시나리오 추가(dev proxy로 /intent·/advise·/feedback, 4 데모 시나리오). (5) e2e-test-instructions.md 신규 생성(브라우저 4 시나리오 시각 검증 절차). (6) build-and-test-summary.md를 제품 전체(U1+U2)로 갱신. aidlc-state.md U2 Build and Test [x]로 갱신 후 완료 메시지 제시.
+**Context**: CONSTRUCTION - Code Generation U2 APPROVED → Build and Test (제품 전체 U1+U2)
+
+---

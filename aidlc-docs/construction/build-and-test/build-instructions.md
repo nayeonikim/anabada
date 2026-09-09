@@ -1,7 +1,8 @@
-# Build Instructions — U1 Advisor Backend
+# Build Instructions — U1 Advisor Backend + U2 Web UI
 
-> 범위: U1(`advisor-backend/`). Python 패키지형이므로 컴파일 산출물은 없고 "환경 구성 + import/컴파일 검증"이 build에 해당.
-> U2(Web UI)는 코드 생성 미수행 → 본 문서 범위 밖(pending).
+> 범위: **U1**(`advisor-backend/`, Python) + **U2**(`frontend/`, React+Vite+TS).
+> U1은 Python 패키지형이라 컴파일 산출물 없이 "환경 구성 + import/컴파일 검증"이 build에 해당.
+> U2는 `tsc --noEmit`(strict 타입체크) + `vite build`(프로덕션 번들)이 build에 해당.
 
 ## Prerequisites
 - **Runtime**: Python 3.11+
@@ -60,3 +61,45 @@ python -c "from app.main import create_app; app = create_app(); print('app route
 ### Import Fails: fixture/데이터 경로 오류
 - **Cause**: `data/*.json` 누락 또는 `ASSETS_PATH` 등 env 오설정.
 - **Solution**: `data/assets.json`·`evidence.json`·`demo_fixtures.json` 존재 확인. 경로는 기본적으로 `advisor-backend/` 기준 상대 해석됨.
+
+---
+
+# U2 Web UI (`frontend/`)
+
+## Prerequisites
+- **Runtime**: Node.js 18+ (LTS 권장), npm 9+
+- **Build Tool**: Vite 5 + TypeScript 5(strict) + `@vitejs/plugin-react`
+- **Dependencies**: `frontend/package.json` (react, react-dom / dev: vite, typescript, @types/*)
+- **Environment Variables**: 없음(필수). dev proxy는 `/intent`·`/advise`·`/feedback`를 `http://localhost:8000`으로 전달. 백엔드 주소가 다르면 `VITE_BACKEND_URL`로 override.
+- **System Requirements**: OS 무관, 메모리 ~512MB, 디스크 ~150MB(node_modules 포함)
+
+## Build Steps
+
+### 1. Install Dependencies
+```bash
+cd frontend
+npm install
+```
+
+### 2. Build (타입체크 + 프로덕션 번들)
+```bash
+# package.json의 build = "tsc --noEmit && vite build"
+npm run build
+```
+(타입체크만 별도 실행: `npm run typecheck`)
+
+### 3. Verify Build Success
+- **Expected Output**: `tsc --noEmit` 오류 0 → `vite build`가 `✓ NN modules transformed` + `dist/` 산출.
+  - 참조 실행값: **38 modules transformed**, strict 오류 0, `dist/assets/index-*.js` ~154KB(gzip ~50KB), `index-*.css` ~6KB.
+- **Build Artifacts**: `frontend/dist/`(index.html + hashed assets). 정적 호스팅 가능.
+- **Common Warnings**: 없음(경고 0 상태로 통과 확인됨).
+
+## Troubleshooting
+
+### `tsc` strict 오류
+- **Cause**: 타입 불일치(예: U1 DTO 미러 `src/api/types.ts` 변경 후 컴포넌트 미갱신).
+- **Solution**: `npm run typecheck`로 오류 위치 확인 → 타입/props 정렬 후 재빌드.
+
+### dev 실행 시 API 404 / CORS
+- **Cause**: 백엔드 미기동 또는 포트 불일치.
+- **Solution**: U1(`uvicorn app.main:app --port 8000`, `DEMO_MODE=true`) 먼저 기동. 포트 다르면 `VITE_BACKEND_URL` 지정.

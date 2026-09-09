@@ -1,11 +1,15 @@
-# Integration Test Instructions — U1 Advisor Backend
+# Integration Test Instructions — U1 Advisor Backend + U2 Web UI
 
 ## Purpose
-U1 내부 컴포넌트 간 상호작용(파이프라인 전 구간)과 HTTP 계약을 통합 검증한다.
-현재 구성된 유닛은 U1 하나이므로 "유닛 간(U1↔U2)" 통합은 U2 코드 생성 이후로 이연(pending).
-대신 **엔드투엔드 파이프라인 통합**(API → S1 → C1~C8 → 공개 DTO)을 대상으로 한다.
+두 층위의 통합을 검증한다:
+- **Part A — U1 내부 파이프라인 통합**: API → S1 → C1~C8 → 공개 DTO (인프로세스 TestClient).
+- **Part B — 유닛 간(U1↔U2) 계약 통합**: U2 Web UI가 U1의 `/intent`·`/advise`·`/feedback` HTTP 계약과 공개 DTO에 정확히 정합하는지(dev proxy 경유).
 
-> 유닛 간 통합(예정): U2 Web UI ↔ U1 `/intent`·`/advise`·`/feedback` HTTP 계약 검증(U2 생성 후 추가).
+> U2는 U1 확정 3개 API에만 의존하므로, 계약 통합의 핵심은 **DTO 형태 일치 + demoMode 결정성**이다.
+
+---
+
+## Part A — U1 파이프라인 통합
 
 ## Test Scenarios
 
@@ -70,3 +74,41 @@ curl -s -X POST "$API_URL/intent" -H 'Content-Type: application/json' \
 # 임시 feedback 파일 사용 시 삭제(테스트는 tmp_path 사용 → 자동 정리)
 rm -f data/feedback.jsonl   # 실제 서버로 수동 테스트한 경우에만
 ```
+
+---
+
+## Part B — 유닛 간 계약 통합 (U2 Web UI ↔ U1)
+
+### 환경 기동
+```bash
+# 터미널 1 — U1 백엔드 (demoMode ON = 결정적 fixture)
+cd advisor-backend
+# venv 활성화 후
+export DEMO_MODE=true        # Windows(cmd): set DEMO_MODE=true / PowerShell: $env:DEMO_MODE="true"
+uvicorn app.main:app --port 8000
+
+# 터미널 2 — U2 프론트엔드 (dev proxy → :8000)
+cd frontend
+npm install                  # 최초 1회
+npm run dev                  # http://localhost:5173
+```
+- Vite dev proxy가 `/intent`·`/advise`·`/feedback`를 `:8000`으로 전달 → **별도 백엔드 CORS 설정 불필요**.
+- 백엔드 포트가 다르면 `VITE_BACKEND_URL=http://host:port npm run dev`.
+
+### 계약 통합 시나리오 (dev proxy 경유, 4 데모 프리셋)
+U2 `demo/presets.ts`의 rawText는 U1 `demo_fixtures.json` 키와 정확히 일치 → demoMode ON에서 결정적.
+
+| # | 프리셋 | 흐름 | 기대 결과(계약) |
+|---|---|---|---|
+| B-1 | Hero (REUSE) | 프리셋 선택 → 구조화(`/intent`) → 자문(`/advise`) | Overall 배너=REUSE, rank1=asset-001, 재사용성 0.92, EvidencePanel에 다중 Source chain 렌더 |
+| B-2 | NEEDS_REVIEW | 구조화 → 자문 | Overall=NEEDS_REVIEW; UNAVAILABLE 후보는 점수 대신 '평가 미완료' 표기(null) |
+| B-3 | DEVELOP | Sales 권한 컨텍스트 → 자문 | Overall=DEVELOP, 후보 카드 0개(접근 가능 0) — 미인가 자산 UI 비노출 |
+| B-4 | Clarify | 정보 부족 rawText → 구조화 | 명료화 질문/누락 필드 렌더 → 보완 재제출 |
+
+### 계약 검증 포인트(핵심)
+- **DTO 형태 일치**: `/intent`·`/advise` 응답 JSON이 U2 `types.ts` 미러와 정합(타입체크 + 실 응답 파싱 무오류).
+- **Type-Enforced Non-Disclosure(§3.2)**: 공개 응답에 `technicalFailureReason`·`excluded*`·`allowedRoles/Users` 부재 → UI에도 미노출.
+- **오류 모델 파싱**: 미매칭 입력 → `422 DEMO_FIXTURE_NOT_FOUND`가 `{error:{code,message,requestId}}`로 반환되고, `client.ts`의 `ApiError`가 파싱하여 사용자 메시지로 표시.
+- **피드백 왕복**: 후보 선택 → `POST /feedback` → 확인 id 표시.
+
+> 실제 브라우저 시각 검증(스크린샷/렌더 확인)은 `e2e-test-instructions.md` 참조.

@@ -1,7 +1,7 @@
-# Unit Test Execution — U1 Advisor Backend
+# Unit / Component Test Execution — U1 Advisor Backend + U2 Web UI
 
-> 테스트는 Code Generation 단계에서 **생성 완료**. 본 단계에서 **실행/통과**를 확인.
-> 실행 위치: `advisor-backend/` (가상환경 활성화 상태).
+> U1: 테스트는 Code Generation 단계에서 **생성 완료**. 본 단계에서 **실행/통과**를 확인. 실행 위치 `advisor-backend/`.
+> U2: 별도 단위 테스트 프레임워크 없이 **정적 타입체크(`tsc --noEmit`, strict)** 가 컴포넌트 레벨 게이트. presentational 분리(상태는 App.tsx 소유) 설계로 타입 계약이 UI 정확성을 강하게 보장. 실 렌더링 검증은 e2e-test-instructions.md 참조.
 
 ## 테스트 인벤토리
 | 파일 | 유형 | 커버리지 |
@@ -51,3 +51,27 @@ pytest --cov=app --cov-report=term-missing -q
 2. Hypothesis 실패는 최소 반례(falsifying example)를 출력 → C6 규칙(BR-STATE/BR-OVERALL/BR-RANK) 대조.
 3. API/오케스트레이터 실패는 fixture 데이터(`data/*.json`)와 기대 시나리오 값 대조.
 4. 코드 수정 후 재실행하여 전부 통과할 때까지 반복.
+
+---
+
+# U2 Web UI — 정적 컴포넌트 게이트
+
+## Run
+```bash
+cd frontend
+npm install          # 최초 1회
+npm run typecheck    # tsc --noEmit (strict)
+```
+
+## Review Results
+- **Expected**: strict 타입 오류 0. (참조 실행값: `npm run build`의 `tsc --noEmit` 단계 오류 0, 38 modules 빌드 성공.)
+- **핵심 검증 포인트**:
+  - **API 계약 정합**: `src/api/types.ts`가 U1 공개 DTO/enum과 1:1. 제외/미인가 필드(`technicalFailureReason`·`excluded*`·`allowedRoles/Users`)가 **구조적으로 부재**(§3.2) → UI가 타입상 노출 불가.
+  - **evaluationStatus 계약**: `UNAVAILABLE` 후보는 점수 대신 '평가 미완료' 표기(`badges.evaluationLabel`, 재사용성 null).
+  - **props 계약**: `components/panel-props.ts`의 4개 패널 props가 App.tsx 파생값과 정합.
+- **참고**: 향후 상호작용 회귀가 필요하면 Vitest + React Testing Library 도입 권장(현 MVP 범위 밖).
+
+## Fix
+1. `npm run typecheck` 출력의 파일:라인 확인.
+2. U1 DTO 변경이 원인이면 `types.ts` → 컴포넌트/`panel-props.ts` 순으로 정렬.
+3. 오류 0까지 반복 후 `npm run build`로 최종 확인.
