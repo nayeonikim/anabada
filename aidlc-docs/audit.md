@@ -351,3 +351,45 @@
 **AI Response**: 답변을 Q1=A(Overall Decision 기준 단일 Prompt) Q2=A(tool-agnostic 일반 텍스트) Q3=A(입력 언어 따름) Q4=A(Overall=NEEDS REVIEW일 때 Review Prompt) Q5=A(Extension 유지: Security No/Resiliency No/PBT Partial) Q6=A(evidence-grounding 비노출 확정)로 해석·검증(모호성 없음). `CR-001-requirement-verification-questions.md`에 RESOLVED + [Answer]:A 기록. Step 7: `aidlc-docs/change-requests/CR-001-requirements-delta.md` 생성 — Intent Analysis(Enhancement/Multiple Components/Moderate/Minimal), FR-11(Action Handoff Prompt 생성: Overall Decision State별 목적, tool-agnostic, 입력 언어), FR-12(표시·Copy, U2), NFR-8(evidence-grounded/Non-Disclosure 확장: 미인가·제외·UNAVAILABLE·내부사유 비노출·환각 금지), 범위밖(자동 실행/수정/commit·PR), Non-Regression(C7 직후 append-only, 기존 파이프라인/BR/PBT 불변), Extension carry-forward, Traceability. `requirements.md`는 Decision C로 미수정(동결). aidlc-state.md: Requirements Analysis(delta) [x] 완료·승인 대기, 다음=User Stories(증분).
 **AI Prompt**: "🔍 Requirements Analysis (Minimal delta) Complete. 산출물 `change-requests/CR-001-requirements-delta.md`. 🔧 Request Changes / ✅ Approve & Continue → User Stories (증분)?"
 **Context**: INCEPTION - Requirements Analysis (Minimal delta) — Step 9 approval gate (next: User Stories 증분)
+
+## CR-001 — INCEPTION Resume (worktree 경로 정정) + Requirements Analysis 승인 게이트 재제시
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "anabada-feat-action-handoff에서 계속 이어갈거야. 이 세션을 거기로 이동못해?" / "재개해줘"
+**AI Response**: 실행 중 세션의 루트는 이동 불가(시작 시 고정)임을 설명 — 대신 절대경로로 워크트리 C:\Users\kimna\anabada-feat-action-handoff 를 대상으로 작업 지속. session-continuity.md + aidlc-state.md 로드. 상태 불일치 정정: Workspace Root/Active Branch를 실제값(경로 anabada-feat-action-handoff, 로컬 브랜치 feat/action-handoff <- 원격 origin/codex/action-handoff 추적)으로 갱신. CR-001 재진입 현재 지점=Requirements Analysis(Minimal delta) 완료·승인 대기. 승인 게이트 재제시(구현/다음 스테이지 미진행).
+**AI Prompt**: "CR-001 Requirements Analysis(Minimal delta) 승인 게이트 — 1) Request Changes  2) Approve & Continue -> User Stories(증분)?"
+**Context**: INCEPTION - Requirements Analysis (Minimal delta) — resume in worktree; approval gate (next: User Stories 증분)
+
+## CR-001 — Requirements Analysis (Minimal delta): Request Changes 반영 (3건)
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "Prompt의 근거에 Structured Intent를 명시해야 합니다. NFR-8은 근거를 결과에 존재하는 Decision·Evidence·Candidate만으로 제한하지만, DEVELOP은 Structured Intent가 핵심입니다. 확정된 Structured Intent, Decision·판단 근거, 접근 가능한 Evidence·Candidate로 정리하고, 확인되지 않은 Gap은 사실로 단정하지 않고 확인 질문으로 표현하도록 하면 좋겠습니다. / UNAVAILABLE 비노출과 Review Prompt의 관계를 명확히 해야 합니다. 현재 규칙은 평가 미완료 후보를 근거·노출에서 전부 제외하지만 기존 로직에서는 평가 미완료 때문에 Overall이 NEEDS REVIEW가 될 수 있습니다. 후보 정보·내부 오류는 제외하더라도 평가가 완료되지 않아 판단 확정이 필요하다는 일반적 제한을 Review Prompt에 표현할 수 있는지 정해야 합니다. 이미 Q6에서 승인한 내용이므로 조용히 바꾸기보다 이 경계 사례를 설명하고 보완하는 게 맞습니다. / API 방식은 아직 설계 결정으로 남겨야 합니다. 질문 문서에서는 /advise 확장과 신규 엔드포인트 중 선택을 설계로 미뤘는데, delta에서는 /advise.actionHandoff가 확정처럼 적혀 있습니다. 현 단계에서는 제안으로 표시하고 Application Design에서 확정하면 절차가 일관됩니다."
+**AI Response**: Request Changes로 처리, CR-001-requirements-delta.md 개정(8개 편집) + CR-001-requirement-verification-questions.md Q6 보완. (1) FR-11·NFR-8 grounding을 '확정된 Structured Intent, Overall Decision 및 판단 근거(decision rationale), 접근 가능한 Evidence·Candidate'로 재정리하고 확인되지 않은 Gap은 확인 질문 형태로 표현하도록 명시(FR-11 EXTEND/DEVELOP 행 포함). (2) §3.1 신설 — UNAVAILABLE 비노출 <-> NEEDS REVIEW 경계 사례: 후보 식별정보·후보별 상세·내부 기술사유는 계속 금지하되, 후보 비식별·집계 수준의 '평가 미완료로 판단 확정 필요' 일반 제한 문구는 Review Prompt에 허용. Q6를 조용히 바꾸지 않고 명시 보완(questions 문서 Q6에도 보완 노트 추가). (3) API 방식(/advise 확장 vs 신규 엔드포인트)을 delta 전반(Scope·FR-11·FR-12·Traceability·Summary)에서 확정이 아닌 '제안'으로 표기하고 Application Design 결정으로 환원. requirements.md는 Decision C로 동결 유지.
+**AI Prompt**: "CR-001 Requirements Analysis(Minimal delta) 재-승인 게이트 — 1) Request Changes 2) Approve & Continue -> User Stories(증분)?"
+**Context**: INCEPTION - Requirements Analysis (Minimal delta) — Request Changes 반영 후 재-승인 게이트 (next: User Stories 증분)
+
+## CR-001 — Requirements Analysis (Minimal delta) APPROVED → User Stories (증분) 진입
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "승인할건데 우리 지금 브랜치 뭐지?"
+**AI Response**: 현재 작업 브랜치 확인 답변 — 워크트리 C:\Users\kimna\anabada-feat-action-handoff = 로컬 브랜치 feat/action-handoff(원격 추적 origin/codex/action-handoff); 원래 세션 폴더 anabada는 docs/aidlc-inception-requirements 유지. 미커밋 문서 변경 4건(aidlc-state.md·audit.md·CR-001 delta·questions) 안내(커밋은 요청 시에만). 승인 확정 — Requirements Analysis(Minimal delta, Request Changes 3건 반영본) APPROVED. aidlc-state.md: Requirements Analysis(delta) [x] APPROVED, User Stories(증분) [~] IN PROGRESS(Part 1 Planning)로 갱신. 다음: User Stories Part 1 — user-stories.md 규칙 + 기존 stories.md/personas.md 로드 후 스토리 계획·clarifying questions(.md) 작성.
+**Context**: INCEPTION - Requirements Analysis (Minimal delta) APPROVED → User Stories (증분) Part 1 Planning
+
+## CR-001 — User Stories (증분) Part 1: Assessment + Story Plan 생성 (질문 게이트)
+**Timestamp**: 2026-09-09T00:00:00Z
+**AI Response**: User Stories(증분) Part 1 실행. user-stories.md 규칙 + 기존 stories.md(Epic 1~5)·personas.md(P1/P2) 로드. Step 1: inception/plans/CR-001-user-stories-assessment.md 생성 — Execute=Yes(High Priority 다수: 신규 user-facing·다중 Persona·복합 로직). Step 2~6: inception/plans/CR-001-story-generation-plan.md 생성 — Breakdown 옵션(신규 Epic 6 vs Epic 4 확장), 제안 스토리 초안(US-6.1 U1 Prompt 생성: Decision 4종 목적+grounding[확정 Structured Intent·Decision·판단근거·접근가능 Evidence·Candidate]+NEEDS REVIEW Review Prompt+§3.1 경계+NFR-8 비노출; US-6.2 U2 표시&Copy: actionHandoff 소비, API 형태는 설계 이관), Hero 확장 제안, Non-Regression(기존 US 미수정 append-only). Step 3: clarifying questions Q1~Q7([Answer]: 태그) — Epic 배치/U1 분할/U2 분할/Hero 포함/Persona·MVP/Copy UX/MVP 범위. 이미 확정된 Q1~Q6 요구결정과 설계 이관(API·LLM vs 템플릿)은 재질문 제외. ⛔ GATE: 답변 대기 — 답변·계획 승인 전 Part 2(Generation) 미진행. stories.md/personas.md 미수정.
+**AI Prompt**: "CR-001 User Stories(증분) Story Plan을 inception/plans/CR-001-story-generation-plan.md에 작성했습니다. §3 Q1~Q7의 [Answer]: 태그를 채워주세요(모두 권장이면 전부 권장). 답변 후 계획 승인 게이트로 진행합니다."
+**Context**: INCEPTION - User Stories (증분) Part 1 — Step 6/7 (plan created, awaiting [Answer]: tags)
+## User Stories (증분) — Part 1 답변 + Part 2 Generation
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "Q1~Q7 모두 A로 진행해줘. 다만 Hero는 Copy 성공까지 포함하고, Copy 성공/실패를 구분하는 AC를 추가해줘. Action Prompt 생성 실패 시 기존 Decision/Evidence를 유지하는 요구를 delta와 스토리에 반영해줘. API 경로·필드는 설계 확정 전까지 AC에서 전제하지 말고, Prompt의 최소 유용성을 검증할 수 있도록 목표·근거·다음 작업·확인 사항과 REUSE/EXTEND 대상 Asset의 명확성을 AC에 포함해줘. \"확정된 판단\"은 NEEDS REVIEW도 포괄하도록 \"현재 산출된 Overall Decision\"으로 정리해줘."
+**AI Response**: "Q1~Q7=A + 정제 5건을 계획 승인으로 간주하고 Part 2 생성 실행. (1) stories.md에 Epic 6 신설 — US-6.1 Action Prompt 생성[MVP·Hero], US-6.2 표시&Copy[MVP·Hero] append-only 추가; Hero 흐름을 Copy 성공까지 확장; Persona Mapping·MVP 요약·CR-001 헤더 노트 갱신. (2) US-6.2에 Copy 성공('복사됨')/실패(알림+수동 복사 대안) 구분 AC + Prompt 부재 시 기존 결과 유지 AC. (3) US-6.1에 최소 유용성(목표·근거·다음 작업·확인) + REUSE/EXTEND 대상 Asset 명확 + 생성 실패 시 기존 Decision·Evidence·랭킹 유지·비차단 AC. (4) US-6.2 AC는 /advise·actionHandoff 등 경로·필드 미전제(설계 확정 이관). (5) 용어 '확정된 판단'→'현재 산출된 Overall Decision'(NEEDS REVIEW 포괄) — delta FR-11/NFR-8/Summary/stories 반영. delta에 FR-11 최소 유용성+생성 실패 유지 clause, §4 Non-Regression에 비차단 격리 bullet 추가. plan(RESOLVED)·aidlc-state 갱신. personas.md 변경 불필요(P1/P2 공통)."
+**Context**: INCEPTION (re-entry) / User Stories (증분) Part 1 답변 + Part 2 Generation 완료 — 스테이지 완료 2-옵션 게이트 제시 예정
+
+---
+
+## User Stories (증분) — 스테이지 승인 (Continue to Next Stage)
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "승인하고 state 갱신 후 commit, push 진행해줘."
+**AI Response**: "User Stories (증분) APPROVED 처리. aidlc-state.md 갱신(Current Stage/Status/체크박스 [x]). 다음 스테이지: Workflow Planning(재계획). 사용자 명시 요청에 따라 feat/action-handoff 워크트리에서 CR-001 증분 변경(stories.md Epic 6, delta, plan RESOLVED, aidlc-state, audit) commit + push 수행."
+**Context**: INCEPTION (re-entry) / User Stories (증분) 스테이지 승인 → Workflow Planning 진입 예정 + commit/push
+
+---
+

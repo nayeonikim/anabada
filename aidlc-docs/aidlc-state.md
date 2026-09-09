@@ -3,9 +3,9 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-09-08T00:00:00Z
-- **Current Stage**: **INCEPTION (re-entry) — Requirements Analysis (Minimal delta) 완료, 승인 대기** for CR-001 Action Handoff, on branch `codex/action-handoff` (forked from `f347c2c`). 산출물: `change-requests/CR-001-requirements-delta.md`(FR-11·FR-12·NFR-8). 다음: User Stories(증분). 기준 체크포인트(격리 원본): U1 Code Generation Steps 0~11 완료(12/12), 단계 승인 대기.
+- **Current Stage**: **INCEPTION (re-entry) — User Stories (증분) APPROVED (2026-09-09); 다음: Workflow Planning(재계획) 진입 예정** for CR-001 Action Handoff, on local branch `feat/action-handoff` (tracks `origin/codex/action-handoff`, forked from `f347c2c`). `stories.md` Epic 6(US-6.1 생성 / US-6.2 표시·Copy) append-only 확정. Requirements Analysis (Minimal delta) + User Stories (증분) 모두 **APPROVED**. 기준 체크포인트(격리 원본): U1 Code Generation Steps 0~11 완료(12/12), 단계 승인 대기.
 - **Discovery Input**: docs/aidlc/discovery-input.md (sole Evidence/input source per user constraint; **CR-001은 discovery-input.md에 반영하지 않고 별도 CR로 관리**)
-- **Active Branch / Worktree**: `codex/action-handoff` @ `C:\Users\kimna\anabada-action-handoff` (기준 브랜치 `docs/aidlc-inception-requirements`와 격리)
+- **Active Branch / Worktree**: local `feat/action-handoff` (tracks `origin/codex/action-handoff`) @ `C:\Users\kimna\anabada-feat-action-handoff` (기준 브랜치 `docs/aidlc-inception-requirements`와 격리)
 
 ## Workspace State
 - **Existing Code**: No
@@ -13,7 +13,7 @@
 - **Build System**: None detected
 - **Project Structure**: Empty (docs + mock data only)
 - **Reverse Engineering Needed**: No
-- **Workspace Root**: C:\Users\kimna\anabada-action-handoff
+- **Workspace Root**: C:\Users\kimna\anabada-feat-action-handoff
 
 ## Code Location Rules
 - **Application Code**: Workspace root (NEVER in aidlc-docs/)
@@ -53,14 +53,14 @@
 ## Product Scope Change — CR-001 Action Handoff
 - **Type**: Product Scope Change (Construction 중 발생, Discovery Input에 없던 신규 요구)
 - **Source**: 사용자 요청(본 대화). `docs/aidlc/discovery-input.md` 미수정 — 별도 `aidlc-docs/change-requests/CR-001-action-handoff.md`로 관리.
-- **Fork**: 브랜치 `codex/action-handoff` ← 기준 커밋 `f347c2c15ec24f92784648e33317f7610f44960b` (`docs/aidlc-inception-requirements`), 워크트리 `C:\Users\kimna\anabada-action-handoff`.
+- **Fork**: 브랜치 `codex/action-handoff` ← 기준 커밋 `f347c2c15ec24f92784648e33317f7610f44960b` (`docs/aidlc-inception-requirements`), 워크트리 `C:\Users\kimna\anabada-feat-action-handoff`.
 - **분기 관찰**: 워크트리 생성 직후 기존 워크트리(`C:\Users\kimna\anabada`)에 미커밋 변경(audit.md + `construction/build-and-test/`) 관찰 — 병행 세션의 Build&Test 진입으로 추정. 본 브랜치는 커밋 상태에서 분기하여 격리. 기존 워크트리 진행 중 작업은 미변경.
 - **범위(MVP)**: Evidence-grounded Action Prompt 생성 + 결과 화면 표시 + Copy. **범위 밖**: Coding Agent 자동 실행 / 코드 자동 수정 / Commit·PR 자동 생성.
-- **Status**: 재진입 계획 승인됨(정정: Inception부터 재진입). **INCEPTION - Requirements Analysis(Minimal delta)** 실행 중 — clarifying-questions 게이트 대기. 구현 미시작.
+- **Status**: 재진입 계획 승인됨. Requirements Analysis(Minimal delta) **APPROVED**. **INCEPTION - User Stories(증분) APPROVED (2026-09-09)** — stories.md Epic 6 확정. 다음: Workflow Planning(재계획). 구현 미시작.
 - **재진입 순서(정정, CR-001 §5)**: Requirements Analysis(Minimal) → User Stories(증분) → Workflow Planning(재계획) → Application Design(증분) → [Units Generation SKIP] → U1 Functional/NFR/Code(증분) → U2(표시/Copy) → Build & Test.
 - [x] CR-001 재진입 계획 승인 (2026-09-09, 정정된 Inception→Construction 순서)
-- [x] **INCEPTION - Requirements Analysis (Minimal delta)** — 답변 전부 권장(A), `CR-001-requirements-delta.md` 생성(FR-11 Action Handoff 생성 / FR-12 표시·Copy / NFR-8 evidence-grounded 비노출). **승인 대기**
-- [ ] User Stories (증분) — Action Handoff 스토리 (백엔드 생성 + U2 표시/Copy)
+- [x] **INCEPTION - Requirements Analysis (Minimal delta)** — `CR-001-requirements-delta.md`(FR-11 / FR-12 / NFR-8 + §3.1 UNAVAILABLE 경계). **APPROVED (2026-09-09)** — Request Changes 3건 반영(Structured Intent grounding·§3.1 경계 명시·API 제안화).
+- [x] User Stories (증분) — **APPROVED (2026-09-09)**. Epic 6: US-6.1(생성)/US-6.2(표시·Copy), append-only. Q1~Q7=A + 정제 5건(Hero=Copy 성공·Copy 성공/실패 AC·생성 실패 시 Decision/Evidence 유지[delta+스토리]·API 경로/필드 AC 미전제·목표·근거·다음작업·확인+REUSE/EXTEND 대상 Asset 명확·"현재 산출된 Overall Decision"). delta FR-11/§4/NFR-8/Summary 동반 갱신.
 - [ ] Workflow Planning (재계획) — delta 스테이지·깊이 확정
 - [ ] Application Design (증분) — C11 ActionHandoffBuilder + `/advise` DTO 계약 + U2 표시 책임
 - [ ] Units Generation — **SKIP 예정** (새 유닛 없음; `unit-of-work-story-map.md` 매핑만 갱신)

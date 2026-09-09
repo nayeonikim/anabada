@@ -64,3 +64,5 @@ Action Prompt는 **결과에 실제 존재하는 Decision·Evidence·접근 가�
 - **X) Other**
 
 [Answer]: A
+
+> **보완 (Request Changes 반영, 2026-09-09)**: Q6=A(비노출)를 유지하되 **경계 사례를 명시**한다 — 평가 미완료(UNAVAILABLE)가 원인이 되어 Overall = NEEDS REVIEW인 경우, Review Prompt는 후보 식별정보·후보별 상세·내부 기술사유 없이 **"일부 평가 미완료로 판단 확정 필요"라는 후보 비식별·일반 수준의 제한 문구**만 표현할 수 있다. (Q6 결정을 조용히 바꾸지 않고 명시적으로 보완.) 상세: `CR-001-requirements-delta.md` §3.1.
