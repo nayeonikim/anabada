@@ -502,3 +502,41 @@
 
 ---
 
+## CR-001 — 세션 재개 + U1 Code Generation 스테이지 승인 재확인 → 다음 스테이지 판정
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "state를 확인하고 workflow를 재개해줘. state먼저 알려줘." / "승인하고 진행해줘"
+**AI Response**: aidlc-state.md + code-generation-plan.md(11단계 전부 [x]) + execution-plan-delta + code-generation.md(완료 메시지 형식) 로드. 워킹트리 clean(최신 `55af90d`) 확인. state의 "스테이지 승인 대기" 문구에 따라 U1 Code Generation(증분) 2-옵션 완료 게이트 재제시 → 사용자 "승인하고 진행해줘"로 **APPROVED 재확인**(이전 세션 line 497-501에서 이미 APPROVED+커밋 완료 이력 존재, 본 입력은 재확인). audit 이력 대조 중 **다음 스테이지 불일치** 발견: (a) Current Stage 라인 + Stage Progress 체크리스트 + 이전 세션 audit = 다음 **Build & Test**; (b) execution-plan-delta §5(authoritative Workflow Planning) = Build & Test 이전에 **U2 Web UI 표시/Copy(EXECUTE)** 존재. 워크스페이스 스캔 결과 **U2 Web UI 전혀 미구현**(top-level: advisor-backend/aidlc-docs/docs/mock만). U2 전체 빌드는 대규모 범위이고 US-6.2(표시/Copy)는 CR-001 핵심 사용자 대면 산출물이므로, 다음 진행 방향을 사용자에게 확인(AskUserQuestion): U2 전체 빌드 진행 vs U1 Build & Test 우선(U2 이연). state 파일은 U1 CG 스테이지 [x] 승인 반영으로 갱신.
+**Context**: CONSTRUCTION (re-entry) / U1 Code Generation (증분) 승인 재확인 → 다음 스테이지(U2 vs Build & Test) 판정 대기
+
+---
+
+## CR-001 — 다음 스테이지 결정: U2 대신 U1 Backend Build & Test 우선 (사용자 지시)
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "state를 먼저 확인해야할것 같은데?" → (state 교차확인 결과 U2가 다음임을 보고) → "main UI가 변경되었으므로 sync를 맞추기 위해 backend부터 build&test를 진행해야할 것 같아"
+**AI Response**: state 교차확인(unit-of-work.md 2유닛·unit-of-work-story-map.md U2 소유 US-6.2·execution-plan-delta §5·CLAUDE.md Build&Test=all units 완료 후) 결과 워크플로우상 다음은 U2였으나, **git 확인 결과 `main` 브랜치에 `frontend/` 디렉토리(=U2 Web UI)가 이미 존재**(워크트리 `C:/Users/kimna/anabada` @ main `3c51a49`). 본 브랜치 `feat/action-handoff`는 backend-only 체크포인트 `f347c2c`에서 분기하여 `frontend/` 없음. 사용자가 언급한 "main UI"는 main 브랜치의 frontend. 사용자 지시에 따라 **U2(이 브랜치 신규 빌드)를 보류하고, main UI가 소비할 U1 백엔드 계약(CR-001 `actionHandoff` 추가 포함)을 sync 맞추기 위해 U1 Backend Build & Test를 실제 실행**하기로 결정. 사용자가 main UI 존재를 알고 내린 정당한 override → 내 U2-first 제안(이 워크트리 문서 기준)을 대체. 환경: Python 3.12.10 사용 가능, requirements.txt(fastapi/uvicorn/pydantic/boto3/hypothesis/pytest/httpx), venv 없음·fastapi 미설치(이전 세션 실행 블로커) → venv 생성 후 설치·pytest 실행 예정. build-and-test 산출 문서는 실제 결과 반영.
+**Context**: CONSTRUCTION — Build and Test (U1 Backend) 진입 (사용자 지시, U2는 main 브랜치에 존재)
+
+---
+
+## Build and Test Stage — U1 Advisor Backend (실제 실행)
+**Timestamp**: 2026-09-09T00:00:00Z
+**Build Status**: Success (Python 3.12.10 venv + `pip install -r requirements.txt`; `import app.main` OK — FastAPI "Reuse Advisor Backend (U1)")
+**Test Status**: Pass — **52 passed(PBT 13 + Unit 39), 0 failed**, 경고 2(starlette httpx deprecation, 무해)
+**AI Response**: 이전 세션 블로커(fastapi 미설치) 해소 위해 venv 생성·requirements 설치 후 pytest 실제 실행. **1차 실행 = 50 passed / 2 failed**: `tests/unit/test_components.py::test_reverify_all_fail_raises`·`test_reverify_partial_fail_degrades`가 `TypeError: Can't instantiate abstract class _AllFailLLM/_PartialFailLLM without ... 'generate_action_prompt'`로 실패 — CR-001이 `LLMClient` ABC에 추상 메서드 `generate_action_prompt`를 추가했으나 기존 테스트 더블(ABC 직접 상속)이 미구현. **회귀 판정 및 수정**: 두 테스트 더블에 `generate_action_prompt` 최소 구현(`RuntimeError("n/a")`, 해당 C5 테스트에서 미호출) 추가 — 프로덕션 코드 로직 무변경, 테스트 더블만 갱신. **재실행 = 52 passed**. E2E: demoMode `/advise`(Hero) 실호출 → `actionHandoff={decisionState:"REUSE", promptText:<4요소 UTF-8 본문>, targetAssetNames:["Customer 360 Dashboard"]}` 정상. main UI sync 계약 확정. **Files Generated**: `aidlc-docs/construction/build-and-test/`(build-instructions.md, unit-test-instructions.md, integration-test-instructions.md, build-and-test-summary.md). **수정 코드**: `advisor-backend/tests/unit/test_components.py`(회귀 픽스). `.venv/`는 gitignore로 커밋 대상 아님. Performance 테스트 N/A(Hard SLA 없음, D6). Build & Test 스테이지 완료 → 2-옵션 승인 게이트(🔧 Request Changes / ✅ Approve & Continue → Operations).
+**Files Generated**:
+- build-instructions.md
+- unit-test-instructions.md
+- integration-test-instructions.md
+- build-and-test-summary.md
+**Context**: CONSTRUCTION — Build and Test (U1 Advisor Backend) 완료, 스테이지 승인 대기
+
+---
+
+## CR-001 — Build and Test APPROVED + 커밋/푸시 요청
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "승인하고 커밋과 푸시먼저해줘."
+**AI Response**: Build and Test 스테이지 **APPROVED** (Approve & Continue). 사용자 요청대로 커밋·푸시 수행. 커밋 범위: 회귀 픽스 `advisor-backend/tests/unit/test_components.py`(테스트 더블 2개에 generate_action_prompt 추가) + 신규 문서 `aidlc-docs/construction/build-and-test/`(4종) + `aidlc-docs/aidlc-state.md` + `aidlc-docs/audit.md`. `.venv/`는 gitignore로 제외. 브랜치 `feat/action-handoff` → upstream `origin/codex/action-handoff` push. Operations는 PLACEHOLDER이므로 커밋/푸시 후 워크플로우는 사실상 완료 상태(main UI 측 US-6.2 반영은 별도).
+**Context**: CONSTRUCTION — Build and Test APPROVED → 커밋/푸시
+
+---
+
