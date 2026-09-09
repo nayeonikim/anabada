@@ -20,19 +20,29 @@ export default function FeedbackBar({
             className="btn btn--sm"
             onClick={() => onFeedback('useful')}
             disabled={submitting}
+            aria-busy={submitting}
           >
-            👍 유용함
+            <span aria-hidden="true">👍</span> 유용함
           </button>
           <button
             type="button"
             className="btn btn--sm"
             onClick={() => onFeedback('notFit')}
             disabled={submitting}
+            aria-busy={submitting}
           >
-            👎 맞지 않음
+            <span aria-hidden="true">👎</span> 맞지 않음
           </button>
-          {confirmationId && <span className="confirmation">기록됨 · {confirmationId}</span>}
-          {error && <span className="error-text">{error}</span>}
+          {confirmationId && (
+            <span className="confirmation" role="status">
+              기록됨 · {confirmationId}
+            </span>
+          )}
+          {error && (
+            <span className="error-text" role="alert">
+              {error}
+            </span>
+          )}
         </div>
       )}
     </div>
