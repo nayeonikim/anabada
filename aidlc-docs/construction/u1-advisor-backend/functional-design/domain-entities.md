@@ -4,6 +4,7 @@
 > 결정 반영: Q1(Score 0.0~1.0), Q2/Q5(evidenceSufficient + 임계 env 변수화), Q3(N=3), Q4·FU2(Overall=최고 Score 후보 State), Q6·FU1(랭킹 State→Score→name), Q8(mock 범위), Q9(feedback).
 > Minimal 정합 개정(2026-09-09): mock/adapter-contract 정합을 위해 **Evidence 엔티티 도입**(한 Asset이 다중 Source Evidence 보유), Asset에 핵심 구조화 필드(capabilities/lifecycle_status/constraints) 추가, Candidate를 **asset 단위**로 조정, EvidenceChain을 실제 Evidence 레코드에서 구성. 권한은 A-2(per-asset allowedRoles/allowedUsers) 유지 — Source-level 권한 레이어 없음(mock의 source-level 예시는 superseded).
 > **NFR Design §7.1 반영(Code Gen, 2026-09-09)**: C5 부분 실패 계약(evaluationStatus)에 맞춰 **VerifiedCandidate/RankedCandidate에 `evaluationStatus(COMPLETED|UNAVAILABLE)` 추가**, `reusabilityScore`를 **nullable**로 변경(UNAVAILABLE→null), UNAVAILABLE 내부 기술사유는 **서버 내부 전용 필드**(공개 DTO 미포함)로 분리. UNAVAILABLE→candidateState 항상 NEEDS_REVIEW. UI 문구/표시는 범위 밖(추후).
+> **⟳ CR-001 증분(Action Handoff, 2026-09-09)**: 신규 **ActionPrompt 엔티티**(§2.15) 추가, **AdviceResult에 `actionPrompt: ActionPrompt | null` 필드**(§2.12) append. C7 직후 C11 ActionHandoffBuilder가 산출(비차단). 근거·상세: [../../../change-requests/CR-001-functional-design-delta.md](../../../change-requests/CR-001-functional-design-delta.md).
 
 ---
 
@@ -165,6 +166,7 @@ VerifiedCandidate[] + states + PermissionContext ─(C7)─> EvidenceChain[] (Ca
 | overallRationale | string | Overall 산출 근거 |
 | isRecommendation | boolean(=true) | Overall은 권고이며 최종 결정은 사용자(Q4 명시) |
 | evidenceChains | EvidenceChain[] | 후보별 Evidence(접근 가능 후보만) |
+| actionPrompt | ActionPrompt \| null | **[CR-001]** C11 산출 실행 Prompt(§2.15). 생성 실패/부재 시 `null`(비차단). 기존 필드 불변 |
 
 > **미노출 원칙(FR-8/NFR-4)**: AdviceResult는 **공개 API 응답 형태**다. 권한 필터링은 기본 동작이므로 제외 관련 필드(상세·플래그·개수)를 **일절 포함하지 않는다**. 미인가 자산의 id·name·link·summary·rawMeta·Evidence도 물론 미포함. 제외 상세는 ExcludedCandidate(§2.6)로 서버 내부에만 보관한다.
 
@@ -184,6 +186,18 @@ VerifiedCandidate[] + states + PermissionContext ─(C7)─> EvidenceChain[] (Ca
 | topN | int | 3 | 재검증 대상 수(Q3) |
 
 > 제약: `0 < extendThreshold ≤ reuseThreshold ≤ 1`. 위반 시 기본값으로 폴백(그리고 경고 로깅).
+
+### 2.15 ActionPrompt (C11 ActionHandoffBuilder 산출 — **[CR-001] 공개 DTO 원천**)
+| Field | 개념 타입 | 설명 | 제약 |
+|---|---|---|---|
+| decisionState | OverallDecision | 이 Prompt가 대응하는 **현재 산출된 Overall Decision** | 항상 = 해당 요청의 overallDecision (INV-HANDOFF-1) |
+| promptText | string | 도구 비종속 **자연어 Prompt 전문**(사용자 입력 언어). **목표·근거·다음 작업·확인 사항** 포함. Copy 대상 | 생성 성공 시 비어 있지 않음 |
+| targetAssetNames | string[] | REUSE/EXTEND의 **대상 Asset명**(접근 가능 ranking에서 도출). DEVELOP/NEEDS_REVIEW는 `[]` | REUSE/EXTEND ⇒ 접근 가능 후보명 부분집합·비어있지 않음 (INV-HANDOFF-2) |
+
+> **생성 주체·시점**: C11 ActionHandoffBuilder, C7 EvidenceBuilder/ranking 조립 직후(advise step 8). grounding=intent·overallDecision·overallRationale·접근 가능 ranking·접근 가능 evidenceChains(BR-HANDOFF).
+> **언어**: promptText는 사용자 Intent 입력 언어를 따른다(기본 한국어, 기술용어 영문 혼용).
+> **비노출 구조(NFR-8)**: ActionPrompt에는 후보 id·미인가 자산·technicalFailureReason·제외 개수/플래그 필드가 **부재**(§2.6/§2.12 Type-Enforced Non-Disclosure 계승). 입력이 이미 공개 투영이라 구조적으로 유입 불가.
+> **비차단(INV-HANDOFF-4)**: 생성 실패 시 AdviceResult.actionPrompt=null, 나머지 결과 정상.
 
 ---
 

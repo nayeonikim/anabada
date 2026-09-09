@@ -20,6 +20,7 @@
 | C8 | FeedbackComponent | 결과 피드백 기록 (MVP: 수집) | FR-9, US-4.3 |
 | C9 | SourceAdapter (interface) + MockSourceAdapters | 공통 검색 인터페이스 + 6개 mock 구현 (확장 지점) | NFR-3, FR-3 |
 | C10 | MockDataStore | mock assets + mock permission context 제공 | NFR-7 |
+| C11 | ActionHandoffBuilder *(CR-001 증분)* | 현재 산출된 Overall Decision·rationale·접근 가능 ranking/evidence·확정 Intent → Overall Decision별 목적의 단일 실행 Action Prompt 생성 (C7 직후, append-only·비차단) | FR-11, US-6.1 |
 
 ---
 
@@ -90,3 +91,13 @@
 - **Purpose**: 대표성 있는 mock 자산 + per-asset 권한 context 제공(NFR-7).
 - **Responsibilities**: mock assets(Source·요약·allowedRoles/allowedUsers 등) + mock user/permission context 저장·조회.
 - **Interface**: getAssets(source?), getPermissionContext(userId/role).
+
+## C11. ActionHandoffBuilder *(CR-001 증분 — Action Handoff)*
+- **Purpose**: 재사용 판단 결과(현재 산출된 Overall Decision + rationale)와 확정된 Structured Intent·접근 가능한 ranking/evidence를 근거로, 다음 개발에 바로 쓸 **단일 실행 Action Prompt**를 생성(도구 비종속 자연어, 사용자 입력 언어). C7 EvidenceBuilder 직후 append-only. (FR-11, US-6.1)
+- **Responsibilities**:
+  - Overall Decision State(REUSE/EXTEND_EXISTING/DEVELOP/NEEDS_REVIEW)별 목적에 맞는 단일 Prompt 생성.
+  - 최소 유용성(목표·근거·다음 작업·확인 사항) 포함; REUSE/EXTEND는 대상 Asset(최상위 접근 가능 후보) 명확 식별.
+  - evidence-grounding(NFR-8): 근거 밖 생성 금지, 미인가·후보별 내부정보·technicalFailureReason 비노출. NEEDS_REVIEW는 개발 미시작 Review Prompt(평가 미완료 원인 시 §3.1 후보 비식별 일반 문구만).
+  - 확인되지 않은 Gap/전제는 확인 질문 형태로 표현. 생성 실패는 예외 → orchestrator가 비차단 처리(기존 결과 유지).
+- **Interface (개념)**: `build(StructuredIntent, OverallDecision, overallRationale, RankedCandidate[], EvidenceChain[]) → ActionPrompt` (실패 시 예외 → orchestrator None 처리).
+- **비노출 구조 보장**: 입력 ranking/evidenceChains는 이미 미인가 제외·내부사유 미투영된 공개 투영 → C11에 미인가/내부정보 유입 경로 없음. (상세 계약: `change-requests/CR-001-application-design-delta.md`)

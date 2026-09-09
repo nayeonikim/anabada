@@ -393,3 +393,79 @@
 
 ---
 
+## CR-001 — Workflow Planning (재계획): Execution Plan Delta 작성 (승인 게이트)
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "state확인해서 workflow 재개해줘"
+**AI Response**: aidlc-state.md 확인 → 다음 스테이지 = Workflow Planning(재계획) 확인. workflow-planning.md 규칙 + 사전 컨텍스트(CR-001-action-handoff.md §4~§5, CR-001-requirements-delta.md FR-11/FR-12/NFR-8+§3.1, stories.md Epic 6 US-6.1/US-6.2, 기존 execution-plan.md, unit-of-work-story-map.md) 로드. CR-001 delta 패턴에 맞춰 원본 execution-plan.md는 동결하고 신규 산출물 `change-requests/CR-001-execution-plan-delta.md` 생성 — Impact(append-only, U1→U2 계약, Low~Medium risk), 스테이지 판정(EXECUTE 6: Application Design증분·U1 Functional증분·U1 NFR Design증분·U1 Code Gen증분·U2 표시/Copy·Build&Test / SKIP 4: Units Generation·U1 NFR Requirements[tech stack·extension 불변]·Infrastructure·Reverse Eng / COMPLETED 3: Workspace Detection·Requirements Analysis delta·User Stories 증분), 검증된 Mermaid 다이어그램 + Text Alternative, Success Criteria(Decision 4종·evidence-grounding 비노출+§3.1·비차단·비회귀·Copy UX), Application Design 미결정(API 형태/Prompt 생성 방식/C11 배치) 기록. aidlc-state.md Current Stage 및 Workflow Planning 체크박스 [~] 갱신.
+**AI Prompt**: "CR-001 Workflow Planning(재계획) 승인 게이트 — 1) Request Changes  2) Approve & Continue → Application Design(증분)?"
+**Context**: INCEPTION (re-entry) / Workflow Planning (재계획) — execution-plan-delta 작성 완료, 승인 게이트 대기 (next: Application Design 증분)
+
+---
+
+## CR-001 — Workflow Planning (재계획) APPROVED → Application Design (증분) 진입
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "승인 하고 진행해줘"
+**AI Response**: Workflow Planning(재계획) APPROVED 처리. aidlc-state.md 갱신(Current Stage=Application Design 증분 진행 중, Workflow Planning 체크박스 [x] APPROVED, Application Design [~] IN PROGRESS). 다음 스테이지 Application Design(증분) 진입 — application-design.md 규칙 + 기존 설계 산출물(components.md/component-methods.md/services.md/component-dependency.md/unit-of-work-story-map.md) + U1 functional-design(domain-entities)·nfr-design(logical-components) 로드하여 C11 ActionHandoffBuilder·Action Prompt 응답 계약·U2 표시 책임·Epic 6 story-map 매핑을 증분 작성 예정.
+**Context**: INCEPTION (re-entry) / Workflow Planning APPROVED → Application Design (증분) 시작
+
+---
+
+## CR-001 — Application Design (증분): 산출물 작성 (승인 게이트)
+**Timestamp**: 2026-09-09T00:00:00Z
+**AI Response**: Application Design(증분) 실행. application-design.md 규칙 + 기존 설계 산출물(components/component-methods/services/component-dependency/unit-of-work-story-map/application-design) + U1 domain-entities·code-summary + 실제 코드(app/api/schemas.py, app/services/orchestrator.py) 로드하여 정합 확인. execution-plan-delta §8 미결정 3건 확정: **D1** `/advise` 응답에 `actionHandoff` 단일 객체 필드 확장(신규 엔드포인트 없음 — 동일 파이프라인 파생·단일 화면·CR-001 §4.2 정합), **D2** orchestrator advise() 랭킹 조립 직후(C7 이후) C11 호출 + try/except 실패 시 actionPrompt=None 비차단, **D3** Prompt 생성 방식(LLM/템플릿)은 C11 인터페이스 추상 유지 후 Functional/NFR Design 이관. 산출물: (신규) `change-requests/CR-001-application-design-delta.md`(authoritative — C11 정의·grounding 입력·메서드·ActionPromptDTO/AdviceResponse.actionHandoff 계약·오케스트레이션·의존성·U2 책임·story-map·비회귀·이관). (append-only 갱신) components.md(C11 행+절), component-methods.md(ActionPrompt/AdviceResult.actionPrompt 타입, C11 메서드, advise 시그니처), services.md(S1 8단계 append+실패 격리), component-dependency.md(매트릭스·데이터흐름·Mermaid에 C11), unit-of-work-story-map.md(US-6.1/6.2 매핑+총 15 스토리), application-design.md(통합본 CR-001 포인터). Units Generation SKIP 확정(새 유닛 없음, 유닛 경계 불변). aidlc-state.md Current Stage/체크박스 갱신(Application Design [~] 승인 대기, Units Generation [x] SKIP).
+**AI Prompt**: "CR-001 Application Design(증분) 승인 게이트 — 확정 결정 D1(`/advise` actionHandoff 확장)·D2(C7 직후 C11 비차단)·D3(생성 방식 Functional Design 이관) 포함. 1) Request Changes  2) Approve & Continue → U1 Functional Design(증분)?"
+**Context**: INCEPTION (re-entry) / Application Design (증분) — 산출물 작성 완료, 승인 게이트 대기 (Units Gen SKIP; next: U1 Functional Design 증분)
+
+---
+
+## CR-001 — Application Design (증분) APPROVED → U1 Functional Design (증분) 진입
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "승인하고 진행"
+**AI Response**: Application Design(증분) APPROVED 처리(D1/D2/D3 확정 포함). aidlc-state.md 갱신(Application Design [x] APPROVED, U1 Functional Design [~] IN PROGRESS, Current Stage 갱신). CONSTRUCTION 재진입 — U1 Functional Design(증분) 시작. functional-design.md 규칙 + 기존 U1 functional-design(domain-entities/business-rules/business-logic-model) 로드하여 ActionPrompt 엔티티·BR-HANDOFF(Decision별 목적·대상 Asset 선택·최소 유용성·§3.1 경계·확인 질문화·생성 실패 비차단)·evidence-grounding 규칙·C7 이후 신규 step을 증분 작성 예정.
+**Context**: CONSTRUCTION (re-entry) / U1 Functional Design (증분) 시작 (Application Design APPROVED)
+
+---
+
+## CR-001 — U1 Functional Design (증분) 산출물 작성 완료 → 승인 게이트
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: (직전 "승인하고 진행"에 이어 U1 Functional Design 증분 실행)
+**AI Response**: U1 Functional Design(증분) 산출물 작성 완료. (신규 authoritative) `change-requests/CR-001-functional-design-delta.md` — ActionPrompt 엔티티(decisionState/promptText/targetAssetNames) + AdviceResult.actionPrompt, BR-HANDOFF(Decision→목적 매핑 REUSE/EXTEND=활용·확장+대상 Asset / DEVELOP=개발 시작 / NEEDS_REVIEW=Review Prompt, 대상 Asset 선택=ranking[0]·정합 가드, 최소 유용성 목표·근거·다음 작업·확인 사항, §3.1 UNAVAILABLE 후보 비식별 일반 문구 경계, grounding 한정·비노출, 확인 질문화, BR-HANDOFF-FAIL 비차단), INV-HANDOFF-1~5(PBT 후보=매핑 로직), advise step 8(C11 try/except), 생성 방식·PBT 배분 NFR Design 이관. (append-only) domain-entities.md(§2.15 ActionPrompt + §2.12 actionPrompt 필드 + 헤더 마커), business-rules.md(BR-HANDOFF + INV-HANDOFF-1~5 + 트레이스 FR-11/US-6.1/NFR-8·§3.1), business-logic-model.md(advise step 8=C11·ASCII 흐름·실패 매트릭스 actionHandoff=null 행·스토리 커버리지). aidlc-state.md Current Stage + U1 Functional Design [~] 승인 대기 갱신.
+**AI Prompt**: "CR-001 U1 Functional Design(증분) 승인 게이트 — ActionPrompt 엔티티·BR-HANDOFF·INV-HANDOFF-1~5·advise step 8(C11 비차단) 포함. 1) 🔧 Request Changes  2) ✅ Continue to Next Stage → U1 NFR Design(증분)?"
+**Context**: CONSTRUCTION (re-entry) / U1 Functional Design (증분) — 산출물 작성 완료, 승인 게이트 대기 (next: U1 NFR Design 증분)
+
+---
+
+## CR-001 — U1 Functional Design (증분) APPROVED → U1 NFR Design (증분) 진입
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "승인하고 진행."
+**AI Response**: U1 Functional Design(증분) APPROVED 처리(ActionPrompt 엔티티·AdviceResult.actionPrompt·BR-HANDOFF·INV-HANDOFF-1~5·advise step 8 C11 비차단 확정). aidlc-state.md 갱신(U1 Functional Design [x] APPROVED, U1 NFR Design [~] IN PROGRESS, Current Stage 갱신). U1 NFR Design(증분) 시작 — nfr-design.md 규칙 + 기존 U1 nfr-requirements/nfr-design 산출물 로드하여 Action Handoff의 Prompt 생성 방식(D3: LLM/템플릿/혼합)·demoMode 결정성·PBT vs 예제 배분·NFR-8 비노출 강제 패턴·성능(LLM latency·타임아웃·비차단)·공개 DTO 매핑을 증분 설계 예정.
+**Context**: CONSTRUCTION (re-entry) / U1 NFR Design (증분) 시작 (U1 Functional Design APPROVED)
+
+---
+
+## CR-001 — U1 NFR Design (증분) 산출물 작성 완료 → 승인 게이트
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: (직전 "승인하고 진행."에 이어 U1 NFR Design 증분 실행)
+**AI Response**: U1 NFR Design(증분) 산출물 작성 완료. **D3 확정 = 하이브리드**(Application Design 이관 결정): (a) 순수·결정적 구조/선택 로직(Decision→목적 매핑·대상 Asset 선택 ranking[0]·§3.1 게이팅·grounding 페이로드 조립·섹션 골격 → INV-HANDOFF-1/2/5, PBT) + (b) 기존 LLMClient(Bedrock)+FixtureProvider 이음새 재사용해 promptText 자연어 본문 생성(demoMode 결정성). 대안(순수 LLM/순수 템플릿) 기각 근거 기재. 패턴: 비차단 격리(C11 실패→actionPrompt=null, 오류 응답 아님; No-Retry+Timeout), grounding-only 비노출(NFR-8: 미인가·technicalFailureReason 구조적 부재, targetAssetNames 비-LLM 산출, Rationale Guard 확장, ActionPromptDTO 타입 강제), PBT(INV-HANDOFF-1/2/5) vs pytest 예제(INV-HANDOFF-3 비노출·INV-HANDOFF-4 비차단·최소 유용성 4요소·demoMode 재현) 배분, 단일 추가 LLM 호출(fan-out 아님)·프롬프트 간결화. 산출물: (신규 authoritative) `change-requests/CR-001-nfr-design-delta.md`. (append-only) nfr-design-patterns.md(§8 Action Handoff + §6 NFR-8 행 + 헤더), logical-components.md(§2.11 C11 ActionHandoffComponent + §2.1 ActionPromptDTO/actionHandoff + §4 데이터 흐름). aidlc-state.md Current Stage + U1 NFR Design [~] 승인 대기 갱신.
+**AI Prompt**: "CR-001 U1 NFR Design(증분) 승인 게이트 — D3 하이브리드 확정·비차단 격리·grounding-only 비노출·PBT vs 예제 배분·ActionPromptDTO 계약 포함. 1) 🔧 Request Changes  2) ✅ Continue to Next Stage → U1 Code Generation(증분)?"
+**Context**: CONSTRUCTION (re-entry) / U1 NFR Design (증분) — 산출물 작성 완료, 승인 게이트 대기 (next: U1 Code Generation 증분)
+
+---
+
+## CR-001 — U1 NFR Design (증분) APPROVED (NFR 최소화 방침) → U1 Code Generation (증분) 진입
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "NFR 요구사항은 최소화 하기로 하고 승인하고 진행하자"
+**AI Response**: U1 NFR Design(증분) APPROVED 처리(D3 하이브리드 확정 포함). 사용자 지시 **'NFR 요구사항 최소화'** 반영 — `CR-001-nfr-design-delta.md`에 §0 NFR 최소화 방침 추가: 신규 config/인프라 0(별도 ACTION_HANDOFF_TIMEOUT_SECONDS·ACTION_HANDOFF_ENABLED 플래그 미도입 → 기존 DEMO_MODE + LLM_TIMEOUT_SECONDS 재사용), 정량 SLA·부하·전용 미터링/관측 없음, 테스트 최소 세트(PBT=INV-HANDOFF-1/2/5, 예제=INV-HANDOFF-3/4·최소 유용성·demoMode 대표 케이스), 비목표 계승. §2.5·§5 config/테스트 지시를 최소 방침으로 축소. aidlc-state.md 갱신(U1 NFR Design [x] APPROVED, Code Generation 진입, Current Stage 갱신). U1 Code Generation(증분) 시작 — code-generation.md 규칙 + 기존 advisor-backend 코드/code-summary 로드하여 Part 1(코드 생성 계획, 체크박스) 작성 후 승인 요청 예정(계획 승인 전 코드 미생성).
+**Context**: CONSTRUCTION (re-entry) / U1 Code Generation (증분) 시작 — Part 1(계획) 예정 (U1 NFR Design APPROVED, NFR 최소화)
+
+---
+
+## CR-001 — U1 Code Generation (증분) Part 1 (계획) 작성 완료 → 승인 게이트
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: (직전 "NFR 요구사항은 최소화 하기로 하고 승인하고 진행하자"에 이어 Code Generation Part 1 실행)
+**AI Response**: code-generation.md 규칙 + 기존 advisor-backend 코드(models.py/llm_client.py/orchestrator.py/schemas.py) + code-summary.md 로드하여 정확한 삽입 지점 확인(AdviceResult에 action_prompt 부재→추가, LLMClient ABC에 body 생성 메서드 추가, orchestrator advise() step 7 ranking 조립 직후 삽입, main.py DI 배선, schemas.py DTO 매핑). U1 Code Generation(증분) **Part 1(계획) 작성 완료** — 신규 authoritative 계획 `construction/plans/u1-advisor-backend-cr-001-code-generation-plan.md`(기존 원본 계획은 체크포인트로 보존). 11 증분 단계(체크박스): Step1 models.py(ActionPrompt+AdviceResult.action_prompt), Step2 신규 app/components/action_handoff.py(C11 하이브리드: 순수 구조/선택 + LLM 본문), Step3 llm_client.py(generate_action_prompt ABC+Bedrock+Fixture), Step4 orchestrator step 8 try/except 비차단, Step5 main.py DI, Step6 schemas.py(ActionPromptDTO+actionHandoff None-safe 매핑), Step7 demo_fixtures.json actionHandoff 섹션, Step8 config 확인(신규 플래그 0), Step9 테스트 최소(PBT INV-HANDOFF-1/2/5 + pytest INV-HANDOFF-3/4·최소 유용성·demoMode), Step10 code-summary/README 갱신, Step11 비회귀 note. NFR 최소화(§0) 적용: 신규 config/인프라 0(DEMO_MODE+LLM_TIMEOUT 재사용), 테스트 최소 세트, 단일 LLM 호출. 스토리 트레이스 US-6.1/US-6.2(표시·Copy는 U2). aidlc-state.md 갱신. **계획 승인 전 코드 미생성**(Part 2 대기).
+**AI Prompt**: "CR-001 U1 Code Generation(증분) Part 1 계획 승인 게이트 — 11 증분 단계(신규 3파일 + 수정 9파일, NFR 최소화). 1) 🔧 Request Changes  2) ✅ Continue to Next Stage → Part 2(코드 생성)?"
+**Context**: CONSTRUCTION (re-entry) / U1 Code Generation (증분) — Part 1(계획) 작성 완료, 승인 게이트 대기 (next: Part 2 생성)
+
+---
+

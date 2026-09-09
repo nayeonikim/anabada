@@ -3,6 +3,7 @@
 > Stage: CONSTRUCTION - NFR Design (U1). NFR 설계 패턴을 지탱하는 논리 컴포넌트/인프라 요소와 통합 방식.
 > 근거: nfr-design-patterns.md, business-logic-model.md(S1 + C1~C8), tech-stack-decisions.md. Q5=A(최소 구성).
 > 구성 원칙: MVP 최소 인프라. Circuit breaker / message queue / 외부 cache 없음.
+> **⟳ CR-001 증분(Action Handoff, 2026-09-09)**: 신규 **C11 ActionHandoffComponent**(§2.11, 기존 LLMClient/FixtureProvider/Config 재사용·신규 인프라 0) + 공개 **ActionPromptDTO/actionHandoff**(§2.1). authoritative: [../../../change-requests/CR-001-nfr-design-delta.md](../../../change-requests/CR-001-nfr-design-delta.md).
 
 ---
 
@@ -47,6 +48,7 @@
   - 공개 Response DTO는 내부 타입(ExcludedCandidate/제외 개수/플래그, LLM 내부 예외·기술 사유)을 **필드로 갖지 않음**.
   - 공개 RankedCandidate DTO는 `evaluationStatus` + nullable `reusabilityScore`를 노출(평가 완료/점수 부재 구분).
   - 치명 오류(C1 실패, C5 전체 실패, demoMode 미매칭, 빈 입력)는 공통 오류 DTO `{error:{code,message,requestId}}`로 매핑(nfr-design-patterns §1.6 HTTP↔code).
+  - **[CR-001]** 공개 **ActionPromptDTO** = `{ decisionState, promptText, targetAssetNames[] }`(camelCase). **AdviceResponse.actionHandoff: ActionPromptDTO | null** — 생성 실패/부재 시 null. 후보 id·내부 사유 필드 **구조적 부재**(Type-Enforced Non-Disclosure, NFR-8).
 
 ### 2.2 S1 AdvisorOrchestratorService
 - **책임**: submitIntent / advise / submitFeedback 흐름의 동기 순차 오케스트레이션(business-logic-model 3장).
@@ -88,6 +90,12 @@
 - **책임**: (resultId, candidateId, verdict) 기록 → FeedbackStore append, 확인 id 반환.
 - **의존**: FeedbackStore. **NFR**: NFR-A4(영속).
 
+### 2.11 C11 ActionHandoffComponent (LLM, 하이브리드) — **[CR-001]**
+- **책임**: (a) 순수 로직 — Decision→목적 매핑·대상 Asset 선택(ranking[0])·§3.1 게이팅·grounding 페이로드 조립·섹션 골격 → (b) LLMClient로 promptText 자연어 생성 → **ActionPrompt** 반환(BR-HANDOFF). 실패 시 예외 → orchestrator가 `actionPrompt=null`(비차단, BR-HANDOFF-FAIL).
+- **위치**: S1 advise 조립(step 7) **직후 step 8**, try/except로 감쌈.
+- **의존**: LLMClient(+FixtureProvider), Config. **신규 저장/인프라 없음**(기존 이음새 재사용).
+- **NFR**: NFR-8/SEC2·SEC3(grounding-only·구조 필드 비-LLM·타입 강제·§3.1), NFR-A2(비차단), NFR-A3(demoMode 결정성), NFR-T1(PBT: INV-HANDOFF-1/2/5)·T3(LLM Seam 예제), NFR-C1/C2(단일 호출·프롬프트 간결화·demoMode), NFR-M1/U1(ActionPromptDTO OpenAPI).
+
 ---
 
 ## 3. 인프라/횡단 논리 컴포넌트 (Q5=A 최소 구성)
@@ -117,9 +125,11 @@ API(request DTO) → S1.advise
   → ReVerification(LLMClient|Fixture)                 : Verified[] (일부실패→evaluationStatus=UNAVAILABLE/score=null; 전체실패→공통 오류)
   → DecisionClassifier(순수)                           : states(COMPLETED만 REUSE/EXTEND) + Overall(UNAVAILABLE만→NEEDS_REVIEW, 기술실패↛DEVELOP)
   → EvidenceBuilder                                   : EvidenceChain[] (UNAVAILABLE은 일반 '평가 미완료'만)
-  → S1 assemble → 공개 Response DTO (excluded·내부 기술사유 미포함, evaluationStatus 노출) : AdviceResult
+  → S1 assemble(ranking)
+  → [CR-001] C11 ActionHandoff(LLMClient|Fixture)     : ActionPrompt|null (try/except 비차단; grounding-only)
+  → 공개 Response DTO (excluded·내부 기술사유 미포함, evaluationStatus 노출, actionHandoff 포함[실패 시 null]) : AdviceResult
        (랭킹: COMPLETED[State→Score→name] → UNAVAILABLE[name→candidateId])
-StructuredLogger: 전 단계 요청ID·소요·제외 감사(내부)
+StructuredLogger: 전 단계 요청ID·소요·제외 감사(내부) + C11 생성 실패 시 내부 감사
 ```
 
 ---

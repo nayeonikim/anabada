@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-09-08T00:00:00Z
-- **Current Stage**: **INCEPTION (re-entry) — User Stories (증분) APPROVED (2026-09-09); 다음: Workflow Planning(재계획) 진입 예정** for CR-001 Action Handoff, on local branch `feat/action-handoff` (tracks `origin/codex/action-handoff`, forked from `f347c2c`). `stories.md` Epic 6(US-6.1 생성 / US-6.2 표시·Copy) append-only 확정. Requirements Analysis (Minimal delta) + User Stories (증분) 모두 **APPROVED**. 기준 체크포인트(격리 원본): U1 Code Generation Steps 0~11 완료(12/12), 단계 승인 대기.
+- **Current Stage**: **CONSTRUCTION (re-entry) — U1 Code Generation (증분) Part 1(계획) 작성 완료, 승인 게이트 대기 (2026-09-09)** for CR-001 Action Handoff, on local branch `feat/action-handoff` (tracks `origin/codex/action-handoff`, forked from `f347c2c`). Requirements Analysis(Minimal) + User Stories(증분) + Workflow Planning(재계획) + Application Design(증분) + U1 Functional Design(증분) + U1 NFR Design(증분) 모두 **APPROVED**; Units Generation **SKIP**. U1 NFR Design(증분) **D3 확정 = 하이브리드** + **NFR 최소화 방침**(신규 config/인프라 0, 기존 DEMO_MODE+LLM_TIMEOUT 재사용, 테스트 최소 세트). 다음: U1 Code Generation(증분) Part 1(계획 체크박스) → 승인 → Part 2(생성). 기준 체크포인트(격리 원본): U1 Code Generation Steps 0~11 완료(12/12), 단계 승인 대기.
 - **Discovery Input**: docs/aidlc/discovery-input.md (sole Evidence/input source per user constraint; **CR-001은 discovery-input.md에 반영하지 않고 별도 CR로 관리**)
 - **Active Branch / Worktree**: local `feat/action-handoff` (tracks `origin/codex/action-handoff`) @ `C:\Users\kimna\anabada-feat-action-handoff` (기준 브랜치 `docs/aidlc-inception-requirements`와 격리)
 
@@ -61,9 +61,13 @@
 - [x] CR-001 재진입 계획 승인 (2026-09-09, 정정된 Inception→Construction 순서)
 - [x] **INCEPTION - Requirements Analysis (Minimal delta)** — `CR-001-requirements-delta.md`(FR-11 / FR-12 / NFR-8 + §3.1 UNAVAILABLE 경계). **APPROVED (2026-09-09)** — Request Changes 3건 반영(Structured Intent grounding·§3.1 경계 명시·API 제안화).
 - [x] User Stories (증분) — **APPROVED (2026-09-09)**. Epic 6: US-6.1(생성)/US-6.2(표시·Copy), append-only. Q1~Q7=A + 정제 5건(Hero=Copy 성공·Copy 성공/실패 AC·생성 실패 시 Decision/Evidence 유지[delta+스토리]·API 경로/필드 AC 미전제·목표·근거·다음작업·확인+REUSE/EXTEND 대상 Asset 명확·"현재 산출된 Overall Decision"). delta FR-11/§4/NFR-8/Summary 동반 갱신.
-- [ ] Workflow Planning (재계획) — delta 스테이지·깊이 확정
-- [ ] Application Design (증분) — C11 ActionHandoffBuilder + `/advise` DTO 계약 + U2 표시 책임
-- [ ] Units Generation — **SKIP 예정** (새 유닛 없음; `unit-of-work-story-map.md` 매핑만 갱신)
+- [x] Workflow Planning (재계획) — **APPROVED (2026-09-09)**. 산출물 `change-requests/CR-001-execution-plan-delta.md`. EXECUTE 6(AD증분·U1 FD증분·U1 NFRD증분·U1 CG증분·U2 표시/Copy·Build&Test) / SKIP 4(Units Gen·U1 NFR Req·Infra·RevEng)
+- [x] Application Design (증분) — **APPROVED (2026-09-09)**. 산출물 `change-requests/CR-001-application-design-delta.md`(authoritative) + 기존 application-design 5종 append-only(components/component-methods/services/component-dependency/unit-of-work-story-map + 통합본 포인터). 확정: D1(`/advise` `actionHandoff` 확장) · D2(C7 직후 C11 비차단) · D3(생성 방식 Functional Design 이관). C11 ActionHandoffBuilder + ActionPromptDTO 계약 + U2 표시/Copy + Epic 6 매핑
+- [x] U1 Functional Design (증분) — **APPROVED (2026-09-09)**. 산출물 `change-requests/CR-001-functional-design-delta.md`(authoritative) + functional-design 3종 append-only. ActionPrompt 엔티티(§2.15) + AdviceResult.actionPrompt + BR-HANDOFF(Decision별 목적·대상 Asset 선택·최소 유용성·§3.1 경계·확인 질문화·비차단) + INV-HANDOFF-1~5 + business-logic-model advise step 8(C11 try/except). 생성 방식(LLM/템플릿)·PBT 배분은 NFR Design 이관.
+- [x] U1 NFR Design (증분) — **APPROVED (2026-09-09, NFR 최소화 방침)**. 산출물 `change-requests/CR-001-nfr-design-delta.md`(authoritative) + nfr-design 2종 append-only. **D3 확정=하이브리드**(순수 구조/선택 + LLM 자연어 본문, 기존 LLMClient/FixtureProvider/demoMode 재사용) · 비차단 격리(실패→actionPrompt=null) · grounding-only 비노출(NFR-8) · PBT(INV-HANDOFF-1/2/5) vs 예제(INV-HANDOFF-3/4·최소 유용성·demoMode) 배분 · ActionPromptDTO/actionHandoff 공개 계약. **최소화(§0)**: 신규 config/인프라 0(DEMO_MODE+LLM_TIMEOUT 재사용), 정량 SLA·전용 관측 없음, 테스트 최소 세트.
+- [~] U1 Code Generation (증분) — IN PROGRESS (2026-09-09). **Part 1(계획) 작성 완료, 승인 게이트 대기** → 승인 → Part 2(생성). 산출물(신규 authoritative): `construction/plans/u1-advisor-backend-cr-001-code-generation-plan.md`(11 증분 단계; 기존 원본 계획은 체크포인트 보존). 범위: models.py(ActionPrompt+action_prompt), 신규 action_handoff.py(C11 하이브리드), llm_client.py(generate_action_prompt), orchestrator.advise() step 8(try/except 비차단), main.py DI, schemas.py(ActionPromptDTO/actionHandoff), demo_fixtures.json, 테스트(PBT INV-HANDOFF-1/2/5 + pytest INV-HANDOFF-3/4·최소 유용성·demoMode 최소), code-summary/README 갱신, 비회귀. NFR 최소화(§0) 적용.
+- [~] Application Design (증분) — 작성 완료, 승인 대기. `change-requests/CR-001-application-design-delta.md` + application-design 5종 append-only. C11 ActionHandoffBuilder + `/advise` `actionHandoff` DTO 계약(D1) + U2 표시 책임 + Epic 6 매핑
+- [x] Units Generation — **SKIP** (새 유닛 없음; `unit-of-work-story-map.md` Epic 6 매핑 갱신 완료, 유닛 경계 불변)
 - [ ] U1 Functional Design (증분) → NFR Design (증분) → Code Generation (증분)
 - [ ] U2 착수 시 Action Handoff 표시/Copy 반영 → Build & Test
 

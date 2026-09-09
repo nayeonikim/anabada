@@ -19,7 +19,8 @@
 | `CandidateState` | REUSE / EXTEND EXISTING / NEEDS REVIEW |
 | `OverallDecision` | REUSE / EXTEND EXISTING / NEEDS REVIEW / DEVELOP |
 | `EvidenceChain` | candidateId, source, assetLink, evidenceItems[], stateRationale |
-| `AdviceResult` | ranking[], overallDecision, evidenceChains[], excluded[] |
+| `AdviceResult` | ranking[], overallDecision, evidenceChains[], excluded[]*, **actionPrompt?** *(CR-001 증분; excluded는 서버 내부 전용)* |
+| `ActionPrompt` *(CR-001 증분)* | decisionState, promptText, targetAssetNames[] |
 
 ---
 
@@ -84,11 +85,18 @@
 | `getAssets(source?)` | mock 자산 조회 | source? | Asset[] |
 | `getPermissionContext(userIdOrRole)` | mock 권한 context 조회 | id/role | PermissionContext |
 
+## C11. ActionHandoffBuilder *(CR-001 증분)*
+| Method | Purpose | Input | Output |
+|---|---|---|---|
+| `build(intent, overallDecision, overallRationale, ranking, evidenceChains)` | Overall Decision별 목적의 단일 Action Prompt 생성(evidence-grounding 준수, 최소 유용성 포함) | StructuredIntent, OverallDecision, string, RankedCandidate[], EvidenceChain[] | ActionPrompt (실패 시 예외 → orchestrator None 처리·비차단) |
+
+> 내부 보조 로직(Decision→목적 매핑, 대상 Asset 선택, §3.1 문구 판정, 생성 방식 LLM/템플릿)은 U1 Functional/NFR Design(증분)에서 확정. 계약 상세: `change-requests/CR-001-application-design-delta.md`.
+
 ---
 
 ## AdvisorOrchestratorService (서비스 진입점 — services.md 참조)
 | Method | Purpose | Input | Output |
 |---|---|---|---|
 | `submitIntent(rawText)` | 구조화 + 필요 시 명료화 요청 | string | StructuredIntent \| ClarificationRequest |
-| `advise(approvedIntent, ctx)` | 검색→권한필터→TopN→재검증→Decision→Evidence 일괄 조율 | StructuredIntent, PermissionContext | AdviceResult |
+| `advise(approvedIntent, ctx)` | 검색→권한필터→TopN→재검증→Decision→Evidence→**Action Handoff(C11)** 일괄 조율 *(CR-001 증분: C7 직후 C11 비차단 호출)* | StructuredIntent, PermissionContext | AdviceResult (+ actionPrompt?) |
 | `submitFeedback(resultId, candidateId, feedback)` | 피드백 위임 | ids, feedback | 확인 |
