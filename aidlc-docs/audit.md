@@ -540,3 +540,11 @@
 
 ---
 
+## CR-001 — 원격 브랜치 이름 정합(upstream 재설정)
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "근데 feat/action-handoff아니야 ?? 왜 origin/codex/action-handoff라고 하는거야" → (설명 후 옵션 A/B 제시) → "B"
+**AI Response**: 로컬 `feat/action-handoff`가 원격 `origin/codex/action-handoff`를 추적하던 이름 불일치(세션 시작 시점부터의 기존 설정)를 사용자에게 설명. 사용자 옵션 B 선택 → `git push -u origin feat/action-handoff`로 원격에 동일 이름 브랜치 신설 + upstream을 `origin/feat/action-handoff`로 재설정(커밋 `faca2ed` 반영). 구 `origin/codex/action-handoff`는 병행 작업(워크트리 `C:/Users/kimna/anabada`) 참조 우려로 **삭제 보류**(faca2ed 유지). aidlc-state.md의 tracking 기록(Current Stage 라인·Active Branch 라인) 갱신.
+**Context**: 브랜치 관리 — upstream 이름 정합(feat/action-handoff)
+
+---
+
