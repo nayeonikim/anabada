@@ -1,11 +1,15 @@
 // 최종 판정 배너(FR-4.3) — 대형 원형 체크 + 판정 + 태그 + 요약 + AI 요약 답변 박스.
 // 판정 색상 팔레트 불변(REUSE=초록 / EXTEND=파랑 / NEEDS REVIEW=앰버 / DEVELOP=보라).
+import type { ActionPromptDTO } from '../api/types'
+import ActionHandoffTab from './ActionHandoffTab'
+
 interface VerdictBannerProps {
   decision: string
   rationale: string
   isRecommendation: boolean
   topCandidateName: string | null
   topScorePercent: number | null
+  handoff: ActionPromptDTO | null
 }
 
 interface VerdictMeta {
@@ -53,6 +57,7 @@ export default function VerdictBanner({
   isRecommendation,
   topCandidateName,
   topScorePercent,
+  handoff,
 }: VerdictBannerProps) {
   const meta = META[decision] ?? META.NEEDS_REVIEW
   const showSub =
@@ -93,6 +98,8 @@ export default function VerdictBanner({
             <p className="ai-answer-label">AI 요약 답변</p>
             <p className="ai-answer-text">{rationale || '요약 정보가 없습니다.'}</p>
           </div>
+
+          <ActionHandoffTab handoff={handoff} />
         </div>
       </div>
     </section>

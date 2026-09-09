@@ -68,6 +68,13 @@ export interface EvidenceChainDTO {
   stateRationale: string
 }
 
+// ── Action Handoff (CR-001, US-6.2) — schemas.py ActionPromptDTO 와 1:1 ──
+export interface ActionPromptDTO {
+  decisionState: string // = overallDecision (REUSE | EXTEND_EXISTING | NEEDS_REVIEW | DEVELOP)
+  promptText: string // Copy 대상 자연어 Prompt 전문(다행, \n 포함)
+  targetAssetNames: string[] // REUSE/EXTEND 대상 Asset명; 없으면 [] (비어있으면 숨김)
+}
+
 export interface AdviceResponse {
   resultId: string
   ranking: RankedCandidateDTO[]
@@ -75,6 +82,7 @@ export interface AdviceResponse {
   overallRationale: string
   isRecommendation: boolean
   evidenceChains: EvidenceChainDTO[]
+  actionHandoff?: ActionPromptDTO | null // CR-001; 생성 실패/부재 시 null(비차단)
 }
 
 // ── /feedback ─────────────────────────────────────────────────────

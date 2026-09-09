@@ -1008,4 +1008,44 @@ body {
   .fit-grid {
     grid-template-columns: 1fr;
   }
+  .handoff-actions {
+    align-items: flex-start;
+  }
+}
+
+/* ── Action Handoff(추천 프롬프트 탭) — CR-001 US-6.2 ─────────── */
+/* 배너 내 AI 요약 답변 다음에 오는 단일 탭 블록. 색/토큰은 기존 재사용(신규 색상 없음). */
+.handoff {
+  margin-top: 18px;
+}
+
+.handoff .tabs {
+  margin-bottom: 14px;
+}
+
+.handoff-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.handoff-target {
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.handoff-note {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin: 0 0 10px;
+}
+
+.handoff-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
 }
