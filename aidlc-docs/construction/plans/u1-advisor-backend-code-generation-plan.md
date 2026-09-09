@@ -105,59 +105,59 @@ advisor-backend/                     # U1 백엔드 루트 (워크스페이스 �
 - [x] 각 문서 상단/해당 섹션에 "NFR Design §7.1~7.4 반영(Code Gen)" 근거 주석 명시. UI 문구/표시는 범위 밖(추후).
 
 ### Step 1 — 프로젝트 구조 셋업 (greenfield)
-- [ ] `advisor-backend/` 디렉터리 트리 + `__init__.py` 생성
-- [ ] `requirements.txt`(fastapi, uvicorn, pydantic, boto3, hypothesis, pytest), `.env.example`, `README.md` 스캐폴드
+- [x] `advisor-backend/` 디렉터리 트리 + `__init__.py` 생성
+- [x] `requirements.txt`(fastapi, uvicorn, pydantic, boto3, hypothesis, pytest), `.env.example`, `README.md` 스캐폴드
 
 ### Step 2 — Config + Logging (횡단)
-- [ ] `app/config.py`: env override 설정(reuseThreshold=0.75, extendThreshold=0.50, TOP_N=3, DEMO_MODE, LLM 모델/리전/타임아웃, 데이터/피드백 경로, 로그 레벨). 임계값 제약(`0<extend≤reuse≤1`) 위반 시 기본값 폴백 + 경고(BR-STATE/P9)
-- [ ] `app/logging_setup.py`: 구조화 로거 + **내부 제외 감사 로거**(공개 응답 미포함)
+- [x] `app/config.py`: env override 설정(reuseThreshold=0.75, extendThreshold=0.50, TOP_N=3, DEMO_MODE, LLM 모델/리전/타임아웃, 데이터/피드백 경로, 로그 레벨). 임계값 제약(`0<extend≤reuse≤1`) 위반 시 기본값 폴백 + 경고(BR-STATE/P9)
+- [x] `app/logging_setup.py`: 구조화 로거 + **내부 제외 감사 로거**(공개 응답 미포함)
 
 ### Step 3 — 도메인 모델 (Business Logic 기반)
-- [ ] `app/domain/models.py`: StructuredIntent, ClarificationRequest, Asset, Evidence, Candidate, PermissionContext, **ExcludedCandidate(내부 전용)**, VerifiedCandidate(+`evaluationStatus: COMPLETED|UNAVAILABLE`, nullable `reusabilityScore`, 내부 실패사유 필드), CandidateState/OverallDecision/SourceId/AssetType 열거, RankedCandidate, EvidenceChain/EvidenceItem, AdviceResult, Feedback, ClassificationConfig
-- [ ] NFR Design §7.1 반영: evaluationStatus·nullable score·내부 기술사유 분리
+- [x] `app/domain/models.py`: StructuredIntent, ClarificationRequest, Asset, Evidence, Candidate, PermissionContext, **ExcludedCandidate(내부 전용)**, VerifiedCandidate(+`evaluationStatus: COMPLETED|UNAVAILABLE`, nullable `reusabilityScore`, 내부 실패사유 필드), CandidateState/OverallDecision/SourceId/AssetType 열거, RankedCandidate, EvidenceChain/EvidenceItem, AdviceResult, Feedback, ClassificationConfig
+- [x] NFR Design §7.1 반영: evaluationStatus·nullable score·내부 기술사유 분리
 
 ### Step 4 — Repository / FeedbackStore / Adapters (Infra)
-- [ ] `app/infra/asset_repository.py`: `data/assets.json`+`evidence.json` 로드 → read-only in-memory
-- [ ] `app/infra/feedback_store.py`: JSONL append-only + 시작 시 로드(영속, NFR-A4)
-- [ ] `app/adapters/base.py`(SourceAdapter 인터페이스), `registry.py`(config-driven), `mock_source_adapter.py`(Evidence[] 반환)
+- [x] `app/infra/asset_repository.py`: `data/assets.json`+`evidence.json` 로드 → read-only in-memory
+- [x] `app/infra/feedback_store.py`: JSONL append-only + 시작 시 로드(영속, NFR-A4)
+- [x] `app/adapters/base.py`(SourceAdapter 인터페이스), `registry.py`(config-driven), `mock_source_adapter.py`(Evidence[] 반환)
 
 ### Step 5 — LLMClient 추상화 + FixtureProvider (Infra)
-- [ ] `app/infra/llm_client.py`: `LLMClient` 인터페이스, `BedrockClaudeClient`(boto3, 타임아웃 config, **재시도 없음**), `FixtureLLMClient`(demoMode: `data/demo_fixtures.json` 결정적 응답 / 미매칭 → 명시적 오류)
-- [ ] demoMode ON=Fixture / OFF=Bedrock 분기(폴백 없음, §1.2)
+- [x] `app/infra/llm_client.py`: `LLMClient` 인터페이스, `BedrockClaudeClient`(boto3, 타임아웃 config, **재시도 없음**), `FixtureLLMClient`(demoMode: `data/demo_fixtures.json` 결정적 응답 / 미매칭 → 명시적 오류)
+- [x] demoMode ON=Fixture / OFF=Bedrock 분기(폴백 없음, §1.2)
 
 ### Step 6 — Mock 데이터 작성 (per-asset 권한 정합)
-- [ ] `data/assets.json`: 12개 Asset을 per-asset `allowedRoles`/`allowedUsers` + 정규화 필드로 작성
-- [ ] `data/evidence.json`: Evidence 레코드(assetId/source/evidenceType/title/summary/sourceRef/lastUpdated)
-- [ ] `data/demo_fixtures.json`: Hero + 3 Unhappy 시나리오 결정적 fixture(C1/C5 응답)
+- [x] `data/assets.json`: 12개 Asset을 per-asset `allowedRoles`/`allowedUsers` + 정규화 필드로 작성
+- [x] `data/evidence.json`: Evidence 레코드(assetId/source/evidenceType/title/summary/sourceRef/lastUpdated)
+- [x] `data/demo_fixtures.json`: Hero + 3 Unhappy 시나리오 결정적 fixture(C1/C5 응답)
 
 ### Step 7 — C6 DecisionClassifier (순수 로직) + Business Logic Unit/PBT
-- [ ] `app/components/decision_classifier.py`: classifyCandidate/classifyAll(BR-STATE), deriveOverall(BR-OVERALL), BR-RANK 정렬 — **NFR Design §7.3 정제 반영**(COMPLETED만 REUSE/EXTEND 판정, UNAVAILABLE만 존재→NEEDS_REVIEW, 기술실패↛DEVELOP; 랭킹 COMPLETED[State→Score→name]→UNAVAILABLE[name→candidateId])
-- [ ] `tests/pbt/test_decision_classifier.py`: Hypothesis **P1~P11**(P5·P8 개정, P10·P11 신규)
-- [ ] `tests/unit/test_decision_classifier_examples.py`: 예제 기반 경계 케이스
+- [x] `app/components/decision_classifier.py`: classifyCandidate/classifyAll(BR-STATE), deriveOverall(BR-OVERALL), BR-RANK 정렬 — **NFR Design §7.3 정제 반영**(COMPLETED만 REUSE/EXTEND 판정, UNAVAILABLE만 존재→NEEDS_REVIEW, 기술실패↛DEVELOP; 랭킹 COMPLETED[State→Score→name]→UNAVAILABLE[name→candidateId])
+- [x] `tests/pbt/test_decision_classifier.py`: Hypothesis **P1~P11**(P5·P8 개정, P10·P11 신규)
+- [x] `tests/unit/test_decision_classifier_examples.py`: 예제 기반 경계 케이스
 
 ### Step 8 — C1~C5, C7, C8 컴포넌트 + 단위 테스트
-- [ ] `structure.py`(C1): 5필드 추출 + detectMissingFields + ClarificationRequest. 실패→오류(§1.3), demoMode ON 미매칭→명시적 오류
-- [ ] `asset_search.py`(C2): Registry 순회 → Evidence를 assetId로 asset 단위 Candidate 집계 + relevance
-- [ ] `permission_filter.py`(C3): per-asset isAccessible(BR-PERMISSION) → accessible/excluded, **초기 단일 스테이지**, excluded는 내부 감사 로그
-- [ ] `candidate_selection.py`(C4): 접근가능 relevance 내림차순 Top-N(config), 0개→DEVELOP 플래그
-- [ ] `reverification.py`(C5): LLM 재검증 → COMPLETED(score/reasoning/roleTaskContextNote/evidenceSufficient) / 실패→UNAVAILABLE(score=null, 내부 사유). 전체 실패→오류 신호(§1.6)
-- [ ] `evidence_builder.py`(C7): 접근가능 Evidence → EvidenceChain. UNAVAILABLE은 '평가 미완료'만(내부 기술사유 비노출)
-- [ ] `feedback.py`(C8): (resultId, candidateId, verdict) → FeedbackStore append + 확인 id
-- [ ] `tests/unit/`: 각 컴포넌트 예제 기반 테스트(LLM은 Fixture/mock 주입)
+- [x] `structure.py`(C1): 5필드 추출 + detectMissingFields + ClarificationRequest. 실패→오류(§1.3), demoMode ON 미매칭→명시적 오류
+- [x] `asset_search.py`(C2): Registry 순회 → Evidence를 assetId로 asset 단위 Candidate 집계 + relevance
+- [x] `permission_filter.py`(C3): per-asset isAccessible(BR-PERMISSION) → accessible/excluded, **초기 단일 스테이지**, excluded는 내부 감사 로그
+- [x] `candidate_selection.py`(C4): 접근가능 relevance 내림차순 Top-N(config), 0개→DEVELOP 플래그
+- [x] `reverification.py`(C5): LLM 재검증 → COMPLETED(score/reasoning/roleTaskContextNote/evidenceSufficient) / 실패→UNAVAILABLE(score=null, 내부 사유). 전체 실패→오류 신호(§1.6)
+- [x] `evidence_builder.py`(C7): 접근가능 Evidence → EvidenceChain. UNAVAILABLE은 '평가 미완료'만(내부 기술사유 비노출)
+- [x] `feedback.py`(C8): (resultId, candidateId, verdict) → FeedbackStore append + 확인 id
+- [x] `tests/unit/`: 각 컴포넌트 예제 기반 테스트(LLM은 Fixture/mock 주입)
 
 ### Step 9 — S1 Orchestrator + 조립
-- [ ] `app/services/orchestrator.py`: submitIntent / advise / submitFeedback 동기 순차 오케스트레이션(business-logic-model §2~§4). 실패 매트릭스(§1.3): C1 실패→오류, C5 일부→강등, C5 전체→오류. 조립 시 BR-RANK + capabilityMatch + excluded 내부 감사
-- [ ] `tests/unit/test_orchestrator.py`: Hero + 3 Unhappy end-to-end(Fixture 주입) 흐름 검증
+- [x] `app/services/orchestrator.py`: submitIntent / advise / submitFeedback 동기 순차 오케스트레이션(business-logic-model §2~§4). 실패 매트릭스(§1.3): C1 실패→오류, C5 일부→강등, C5 전체→오류. 조립 시 BR-RANK + capabilityMatch + excluded 내부 감사
+- [x] `tests/unit/test_orchestrator.py`: Hero + 3 Unhappy end-to-end(Fixture 주입) 흐름 검증
 
 ### Step 10 — API Layer + 공개 DTO + 오류 매핑
-- [ ] `app/api/schemas.py`: 요청 모델(IntentRequest/AdviseRequest/FeedbackRequest) + **공개 응답 DTO**(RankedCandidate DTO에 `evaluationStatus`+nullable `reusabilityScore`; ExcludedCandidate/제외 개수/플래그/내부 기술사유 **필드 부재** — §3.2 Type-Enforced Non-Disclosure)
-- [ ] `app/api/errors.py`: 공통 오류 모델 `{error:{code,message,requestId}}` + HTTP↔code 매핑(§1.6: 502 INTENT_STRUCTURING_FAILED / 504 LLM_TIMEOUT / 502 REVERIFICATION_UNAVAILABLE / 422 DEMO_FIXTURE_NOT_FOUND / 400 EMPTY_INTENT)
-- [ ] `app/main.py`: FastAPI 앱, `/intent`·`/advise`·`/feedback` 라우트, DI 조립(config→components→orchestrator), 예외 핸들러(내부 예외 문자열 미노출), OpenAPI 자동 문서
-- [ ] `tests/unit/test_api.py`: 라우트·DTO 직렬화(미인가/내부 필드 부재 검증)·오류 매핑 테스트
+- [x] `app/api/schemas.py`: 요청 모델(IntentRequest/AdviseRequest/FeedbackRequest) + **공개 응답 DTO**(RankedCandidate DTO에 `evaluationStatus`+nullable `reusabilityScore`; ExcludedCandidate/제외 개수/플래그/내부 기술사유 **필드 부재** — §3.2 Type-Enforced Non-Disclosure)
+- [x] `app/api/errors.py`: 공통 오류 모델 `{error:{code,message,requestId}}` + HTTP↔code 매핑(§1.6: 502 INTENT_STRUCTURING_FAILED / 504 LLM_TIMEOUT / 502 REVERIFICATION_UNAVAILABLE / 422 DEMO_FIXTURE_NOT_FOUND / 400 EMPTY_INTENT)
+- [x] `app/main.py`: FastAPI 앱, `/intent`·`/advise`·`/feedback` 라우트, DI 조립(config→components→orchestrator), 예외 핸들러(내부 예외 문자열 미노출), OpenAPI 자동 문서
+- [x] `tests/unit/test_api.py`: 라우트·DTO 직렬화(미인가/내부 필드 부재 검증)·오류 매핑 테스트
 
 ### Step 11 — 문서 요약 (aidlc-docs)
-- [ ] `aidlc-docs/construction/u1-advisor-backend/code/code-summary.md`: 생성 파일 목록·구조·스토리 트레이스·실행 방법 요약
-- [ ] `advisor-backend/README.md`: 설치·실행(uvicorn)·env·demoMode·테스트 실행법
+- [x] `aidlc-docs/construction/u1-advisor-backend/code/code-summary.md`: 생성 파일 목록·구조·스토리 트레이스·실행 방법 요약
+- [x] `advisor-backend/README.md`: 설치·실행(uvicorn)·env·demoMode·테스트 실행법
 
 > **주의**: 테스트는 본 단계에서 **생성만** 하고 실제 실행/통과는 Build & Test 단계에서 수행.
 
