@@ -235,6 +235,16 @@ class EvidenceChain:
     state_rationale: str
 
 
+# ── ActionPrompt (C11 산출 — CR-001 §2.15) ─────────────────────────
+# 공개 DTO(ActionPromptDTO) 원천. grounding-only: 후보 id·미인가 자산·
+# technicalFailureReason·제외 개수/플래그 필드 부재(§3.2 계승, INV-HANDOFF-3).
+@dataclass
+class ActionPrompt:
+    decision_state: OverallDecision      # = 요청의 overallDecision (INV-HANDOFF-1)
+    prompt_text: str                     # 도구 비종속 자연어 Prompt 전문(Copy 대상)
+    target_asset_names: list[str]        # REUSE/EXTEND=대상 Asset명, 그 외 [] (INV-HANDOFF-2)
+
+
 @dataclass
 class AdviceResult:
     result_id: str
@@ -243,6 +253,7 @@ class AdviceResult:
     overall_rationale: str
     evidence_chains: list[EvidenceChain]
     is_recommendation: bool = True
+    action_prompt: Optional[ActionPrompt] = None  # CR-001: 생성 실패/부재 시 None(비차단, INV-HANDOFF-4)
 
 
 @dataclass

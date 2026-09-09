@@ -17,6 +17,7 @@ from __future__ import annotations
 import uuid
 from typing import Union
 
+from app.components.action_handoff import ActionHandoffComponent
 from app.components.asset_search import AssetSearchComponent
 from app.components.candidate_selection import CandidateSelectionComponent
 from app.components.decision_classifier import (
@@ -65,6 +66,7 @@ class AdvisorOrchestratorService:
         evidence_builder: EvidenceBuilderComponent,
         feedback: FeedbackComponent,
         config: ClassificationConfig,
+        action_handoff: "ActionHandoffComponent | None" = None,
     ):
         self._structuring = structuring
         self._search = search
@@ -74,6 +76,7 @@ class AdvisorOrchestratorService:
         self._evidence_builder = evidence_builder
         self._feedback = feedback
         self._config = config
+        self._action_handoff = action_handoff  # CR-001: None이면 Action Handoff 미수행(비회귀)
 
     # ── C1: submitIntent (§2) ────────────────────────────────────
     def submit_intent(self, raw_text: str, request_id: str = "") -> IntentResult:
@@ -128,6 +131,27 @@ class AdvisorOrchestratorService:
             rankedCount=len(ranking),
             excludedCount=len(filtered.excluded),  # 내부 감사만
         )
+
+        # 8) [CR-001] Action Handoff (BR-HANDOFF, 비차단 격리)
+        action_prompt = None
+        if self._action_handoff is not None:
+            try:
+                action_prompt = self._action_handoff.build(
+                    intent=intent,
+                    overall=overall,
+                    overall_rationale=_OVERALL_RATIONALE[overall],
+                    ranking=ranking,
+                    evidence_chains=evidence_chains,
+                )
+            except Exception as e:  # noqa: BLE001 — 비차단(BR-HANDOFF-FAIL/INV-HANDOFF-4)
+                action_prompt = None
+                audit(
+                    "action_handoff_failed",
+                    requestId=request_id,
+                    resultId=result_id,
+                    error=type(e).__name__,
+                )
+
         return AdviceResult(
             result_id=result_id,
             ranking=ranking,
@@ -135,6 +159,7 @@ class AdvisorOrchestratorService:
             overall_rationale=_OVERALL_RATIONALE[overall],
             evidence_chains=evidence_chains,
             is_recommendation=True,
+            action_prompt=action_prompt,
         )
 
     # ── C8: submitFeedback (§4) ──────────────────────────────────

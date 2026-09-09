@@ -1,8 +1,10 @@
 # Application Design — Rebuild or Reuse Advisor (통합본)
 
 > INCEPTION - Application Design 통합 문서. 상세 산출물: [components.md](components.md), [component-methods.md](component-methods.md), [services.md](services.md), [component-dependency.md](component-dependency.md).
-> 근거: requirements.md(FR-1..10, NFR-1..7), stories.md(5 Epic), personas.md(P1/P2).
+> 근거: requirements.md(FR-1..10, NFR-1..7), stories.md(5 Epic + **Epic 6 Action Handoff [CR-001]**), personas.md(P1/P2).
 > 목적: 고수준 컴포넌트/서비스/인터페이스/의존성 정의. **상세 비즈니스 룰·데이터 스키마·기술스택은 이후 Functional Design / NFR 단계에서 확정.**
+>
+> **⟳ CR-001 증분(Action Handoff)**: 신규 컴포넌트 **C11 ActionHandoffBuilder**(C7 직후, append-only·비차단), **`/advise` 응답 `actionHandoff` 필드 확장**(D1 확정), U2 표시·Copy 책임. 위 상세 산출물에 append-only 반영됨. **authoritative 요약·설계 결정(D1~D3)·계약: [../../change-requests/CR-001-application-design-delta.md](../../change-requests/CR-001-application-design-delta.md).**
 
 ---
 
