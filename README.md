@@ -11,6 +11,14 @@
 - **DEVELOP** — 적절한 기존 자산이 없어 신규 개발
 - **NEEDS REVIEW** — 근거가 부족하거나 자동 판단이 어려워 추가 검토 필요
 
+## 🎬 Demo
+
+![ANABADA Demo](docs/demo/demo.gif)
+
+> **잠깐, 그거 이미 있는데?**  
+> 아나바다는 개발자가 새로 만들기 전에 사내 자산을 탐색하고,
+> **REUSE / EXTEND EXISTING / DEVELOP / NEEDS REVIEW** 결정을 근거와 함께 제공합니다.
+
 ## Why this matters
 
 AI Coding은 **“어떻게 더 빨리 만들 것인가?”**를 크게 개선했습니다. 하지만 개발을 시작하기 전에는 또 다른 질문이 필요합니다.
@@ -76,7 +84,7 @@ EDM ──────────┘
 
 ## Demo
 
-기본 실행은 **Demo Mode**입니다. 실제 AWS 호출 없이 결정적 Fixture를 사용하므로 심사와 Demo Media에서 동일한 결과를 안정적으로 재현할 수 있습니다.
+기본 실행은 **Demo Mode**입니다. 실제 구현은 사내 자산을 연결할 수 있는 Adapter 구조로 설계되어 있지만, 공개 Demo에서는 사내 자산에 직접 접근할 수 없으므로 실제 AWS 호출 대신 결정적 Fixture를 사용합니다. 이를 통해 심사와 Demo Media에서도 동일한 결과를 안정적으로 재현할 수 있습니다.
 
 ### Hero Scenario
 
