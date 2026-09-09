@@ -252,9 +252,20 @@ npm run dev
 └── mock/                   # Representative enterprise mock data
 ```
 
-## Hackathon Scope
+## Hackathon Scope & Production Path
 
-MVP에서는 실제 사내 시스템과 SSO 대신 representative Mock Enterprise Data와 Permission Context를 사용합니다. 실제 환경에서는 **Source Adapter, Identity Context, Bedrock 실행 환경**을 연결하는 방식으로 확장하도록 설계했습니다.
+MVP에서는 실제 사내 시스템과 SSO 대신 representative Mock Enterprise Data와 명시적 Permission Context를 사용합니다.
+
+### Security scope (명시적 한계)
+
+- **Identity는 인증 없이 신뢰 입력으로 가정합니다.** 현재 `/advise` 요청 본문의 Permission Context(`userId` / `role`)를 그대로 사용하며, 토큰·세션 검증을 수행하지 않습니다. 따라서 MVP에서는 요청자가 자신의 role을 주장(client-asserted)합니다.
+- **Permission filtering 로직 자체는 구현·검증되어 있습니다.** 미인가 Asset은 LLM 재검증 전에 후보에서 제거되고, 공개 API 응답에는 내부 권한 정보나 제외된 Asset이 노출되지 않습니다. 다만 그 위에 놓일 **신뢰 가능한 identity 계층은 MVP 범위 밖**입니다.
+
+### Production extension path
+
+- **Authentication / SSO** — SSO 또는 토큰 검증을 permission filter **앞단**에 삽입해 검증된 identity를 주입합니다. 주입 지점은 단일화되어 있어(프런트엔드 `DEFAULT_CONTEXT`, 백엔드 `PermissionContext` 생성부) 이 계층만 교체하면 됩니다.
+- **Source Adapter** — 6개 Mock Adapter를 공통 `SourceAdapter` + Registry 계약을 유지한 채 실제 Enterprise API Adapter로 교체합니다. Advisor 핵심 파이프라인(Decision Classifier 등)은 수정 대상이 아닙니다.
+- **Bedrock 실행 환경** — `DEMO_MODE=false`로 전환해 실제 Amazon Bedrock Claude 호출을 사용합니다.
 
 ---
 
