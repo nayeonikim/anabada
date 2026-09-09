@@ -670,3 +670,10 @@ Q9=B (데스크톱 전용)
 **Context**: 통합 실행 — squash + rebase --onto 완료, 충돌 해소 후 rebase --continue 예정
 
 ---
+
+## CR-001 — rebase --continue 완료 + 통합 후 검증(4종)
+**Timestamp**: 2026-09-09T00:00:00Z
+**AI Response**: `git add -A` 후 `git rebase --continue`로 통합 커밋 확정 → `integration/action-handoff-on-main` @ `8f5b172`(origin/main `0b2ff9f` 위 단일 CR-001 커밋, 36 files, +2174/-26). 토폴로지 확인: `git merge-base --is-ancestor origin/main integration/...` = YES(clean graft), 원본 `feat/action-handoff`@`1f9fef2`(개별 8커밋)·`backup/feat-action-handoff-20260909`@`2d2d13e` 보존, 워크트리 clean. **통합 후 검증(사용자 요청 4종, 모두 PASS)**: (1) **백엔드 회귀** — `DEMO_MODE=true pytest tests/` = **72 passed, 2 skipped, 0 failed**(경고 2 = starlette httpx deprecation, 무해). main 신규 테스트(feedback-hardening·demo-coverage)와 CR-001 actionHandoff 테스트가 회귀 없이 공존. (2) **Action Handoff API 계약** — 라이브 `/advise`(TestClient, demoMode Hero): 200, `overallDecision=REUSE`, `ranking`=3, `actionHandoff` 키=`[decisionState, promptText, targetAssetNames]`(camelCase), `decisionState="REUSE"`, `targetAssetNames=["Customer 360 Dashboard"]`, `promptText` 702자 non-empty. 공개 응답 내부/미인가 필드(`technicalFailureReason`·`excluded*`·`allowedRoles/Users`) 누출 0. 감사 로그 `permission_excluded`(asset-003)·`advise_completed`(REUSE, rankedCount=3, excludedCount=1) 정상. (3) **생성 실패 시 기존 결과 유지** — `tests/unit/test_action_handoff.py::test_inv_handoff_4_non_blocking` PASS(C11 실패→`actionHandoff=null`, Decision/Evidence/랭킹 유지) + `test_inv_handoff_3_non_disclosure`(grounding-only 비노출) 포함 actionHandoff 8종 전량 PASS. (4) **frontend 빌드/기존 동작** — 신규 워크트리라 `npm install`(exit 0) 후 `npm run build`(`tsc --noEmit` strict 오류 0 + vite build **38 modules**, dist js ~154KB/gzip ~50KB) 성공(기록 baseline과 일치). frontend는 `actionHandoff` 미참조 확인(U2 US-6.2 미구현, 정상). aidlc-state.md 검증 결과 반영. **U2 신규 구현(US-6.2) 미착수** — 사용자 지시 준수.
+**Context**: 통합 완료(`8f5b172`) + 통합 후 검증 4종 PASS. main 반영/PR은 사용자 지시 대기.
+
+---
