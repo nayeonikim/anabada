@@ -18,47 +18,47 @@
 
 ## 증분 단계 (Step 1~11)
 
-- [ ] **Step 1 — 도메인 엔티티** (`advisor-backend/app/domain/models.py`, 수정)
+- [x] **Step 1 — 도메인 엔티티** (`advisor-backend/app/domain/models.py`, 수정)
   - `ActionPrompt` dataclass 추가: `decision_state: OverallDecision`, `prompt_text: str`, `target_asset_names: list[str]`.
   - `AdviceResult`에 `action_prompt: Optional[ActionPrompt] = None` 추가(기존 필드 불변). *(US-6.1)*
 
-- [ ] **Step 2 — C11 ActionHandoffComponent** (`advisor-backend/app/components/action_handoff.py`, 신규)
+- [x] **Step 2 — C11 ActionHandoffComponent** (`advisor-backend/app/components/action_handoff.py`, 신규)
   - **(a) 순수 로직**(PBT 대상): `decision_state = overall`; `select_target_asset_names(overall, ranking)`(REUSE/EXTEND → `[ranking[0].asset_name]`, 접근 가능 대상 없으면 예외; DEVELOP/NEEDS_REVIEW → `[]`); `should_note_unavailable(ranking)`(∃ evaluationStatus==UNAVAILABLE); grounding 페이로드 조립(접근 가능 ranking/evidence_chains/intent/overall/overall_rationale만) + 섹션 골격(목표·근거·다음 작업·확인 사항).
   - **(b) LLM 본문**: `llm_client.generate_action_prompt(payload)` → `prompt_text`.
   - `build(intent, overall, overall_rationale, ranking, evidence_chains) -> ActionPrompt`. 실패 시 예외(정합 가드 위반 포함). *(US-6.1 · BR-HANDOFF · INV-HANDOFF-1/2/5)*
 
-- [ ] **Step 3 — LLMClient 확장** (`advisor-backend/app/infra/llm_client.py`, 수정)
+- [x] **Step 3 — LLMClient 확장** (`advisor-backend/app/infra/llm_client.py`, 수정)
   - `LLMClient` ABC에 `generate_action_prompt(payload: ActionPromptRequest) -> str` 추가.
   - `BedrockClaudeClient`: grounding-only 간결 프롬프트(§2.4) 조립 + `_invoke` 재사용(재시도 없음·타임아웃 `LLM_TIMEOUT_SECONDS` 재사용).
   - `FixtureLLMClient`: fixtures `"actionHandoff"` 섹션에서 시나리오 키로 promptText 조회, 미매칭 → `DemoFixtureNotFoundError`. *(NFR-A3/T3/C2)*
 
-- [ ] **Step 4 — Orchestrator advise() step 8** (`advisor-backend/app/services/orchestrator.py`, 수정)
+- [x] **Step 4 — Orchestrator advise() step 8** (`advisor-backend/app/services/orchestrator.py`, 수정)
   - 생성자에 `action_handoff: ActionHandoffComponent` 주입.
   - step 7(ranking) 직후: `try: action_prompt = self._action_handoff.build(...) except Exception: action_prompt=None; audit("action_handoff_failed", ...)` (비차단, 내부 감사).
   - `AdviceResult(..., action_prompt=action_prompt)`. *(BR-HANDOFF-FAIL · INV-HANDOFF-4)*
 
-- [ ] **Step 5 — DI 배선** (`advisor-backend/app/main.py`, 수정)
+- [x] **Step 5 — DI 배선** (`advisor-backend/app/main.py`, 수정)
   - `ActionHandoffComponent(llm_client)` 생성 후 `AdvisorOrchestratorService(...)`에 전달. 기존 조립 흐름 유지.
 
-- [ ] **Step 6 — 공개 DTO 매핑** (`advisor-backend/app/api/schemas.py`, 수정)
+- [x] **Step 6 — 공개 DTO 매핑** (`advisor-backend/app/api/schemas.py`, 수정)
   - `ActionPromptDTO(BaseModel)`: `decisionState: str`, `promptText: str`, `targetAssetNames: list[str]`(camelCase alias 규약 준수).
   - `AdviceResponse`에 `actionHandoff: Optional[ActionPromptDTO] = None` 추가.
   - AdviceResult→AdviceResponse 매퍼에서 `action_prompt` None-safe 매핑(없으면 `actionHandoff=null`). 내부 타입 미노출(§3.2). *(US-6.2 데이터 · INV-HANDOFF-3)*
 
-- [ ] **Step 7 — demoMode fixture** (`advisor-backend/data/demo_fixtures.json`, 수정)
+- [x] **Step 7 — demoMode fixture** (`advisor-backend/data/demo_fixtures.json`, 수정)
   - `"actionHandoff"` 섹션 추가: 대표 시나리오(REUSE/EXTEND_EXISTING/DEVELOP/NEEDS_REVIEW[UNAVAILABLE 포함])별 결정적 `promptText`(목표·근거·다음 작업·확인 사항 포함; §3.1 케이스는 후보 비식별 일반 문구). **대표 케이스 최소 세트**(§0). *(NFR-A3)*
 
-- [ ] **Step 8 — Config 확인** (`advisor-backend/app/config.py`, 확인/필요 시 최소 수정)
+- [x] **Step 8 — Config 확인** (`advisor-backend/app/config.py`, 확인/필요 시 최소 수정)
   - **신규 플래그 미도입**(§0): 기존 `DEMO_MODE` + `LLM_TIMEOUT_SECONDS` 재사용 확인. 하드코딩 부재 확인.
 
-- [ ] **Step 9 — 테스트(최소 세트)**
+- [x] **Step 9 — 테스트(최소 세트)**
   - `advisor-backend/tests/pbt/test_action_handoff.py`(신규): Hypothesis — INV-HANDOFF-1(decisionState==overall)/2(targetAssetNames 규칙)/5(§3.1 게이팅) 순수 로직.
   - `advisor-backend/tests/unit/test_action_handoff.py`(신규): INV-HANDOFF-3(promptText/targetAssetNames에 미인가 자산명·technicalFailureReason 미포함), INV-HANDOFF-4(LLM mock 예외→action_prompt=None ∧ 기타 결과 불변), 최소 유용성 4요소 존재(fixture), demoMode 재현. *(NFR-T1/T3)*
 
-- [ ] **Step 10 — 문서 갱신** (`aidlc-docs/construction/u1-advisor-backend/code/code-summary.md` 수정 + `advisor-backend/README.md` 수정)
+- [x] **Step 10 — 문서 갱신** (`aidlc-docs/construction/u1-advisor-backend/code/code-summary.md` 수정 + `advisor-backend/README.md` 수정)
   - code-summary: CR-001 증분 파일·트레이스·계약 섹션 추가. README: `actionHandoff` 필드·demoMode 재현 note.
 
-- [ ] **Step 11 — 비회귀 확인 note**
+- [x] **Step 11 — 비회귀 확인 note**
   - 기존 공개 DTO/테스트 계약 불변(actionHandoff optional/nullable), P1~P11 불변 확인 note. (실제 실행·통과 확인은 Build & Test)
 
 ---

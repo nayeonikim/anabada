@@ -469,3 +469,36 @@
 
 ---
 
+## CR-001 — 세션 재개 (Session Continuity)
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "state 확인해서 workflow 재개해줘"
+**AI Response**: aidlc-state.md + session-continuity.md + code-generation.md + U1 Code Generation(증분) 계획(`construction/plans/u1-advisor-backend-cr-001-code-generation-plan.md`) 로드. 재개 지점 확인 = CONSTRUCTION (re-entry) / U1 Code Generation (증분) **Part 1(계획) 작성 완료, 승인 게이트 대기**. 이전 완료: Requirements(Minimal delta)·User Stories(증분 Epic 6)·Workflow Planning(재계획)·Application Design(증분)·U1 Functional Design(증분)·U1 NFR Design(증분, NFR 최소화) 모두 APPROVED; Units Generation SKIP. Welcome Back 상태 + Part 1 계획 승인 게이트 재제시(코드 미생성).
+**AI Prompt**: "CR-001 U1 Code Generation(증분) Part 1 계획 승인 게이트 재제시 — 11 증분 단계(신규 3파일 + 수정 9파일, NFR 최소화). 1) 🔧 Request Changes  2) ✅ Continue → Part 2(코드 생성)?"
+**Context**: CONSTRUCTION (re-entry) / U1 Code Generation (증분) — Part 1(계획) 승인 게이트 재개
+
+---
+
+## CR-001 — U1 Code Generation (증분) Part 1 APPROVED → Part 2 (멀티에이전트 생성) 진입
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "승인할게. 멀티에이전트로 진행해줘"
+**AI Response**: U1 Code Generation(증분) Part 1(계획) **APPROVED** 처리. 사용자 지시 **'멀티에이전트로 진행'** 반영. Part 2(코드 생성)를 fork 서브에이전트 멀티에이전트로 실행. 병렬 편집 인터페이스 드리프트 방지를 위해 오케스트레이터가 먼저 기존 코드(models/llm_client/orchestrator/schemas/main/config/errors/demo_fixtures/assets) + CR-001 functional·nfr delta + 테스트 컨벤션(PBT/orchestrator e2e)을 로드하여 **공유 계약**(ActionPrompt/ActionPromptRequest/ActionHandoffComponent.build 시그니처/ActionPromptDTO/orchestrator action_handoff=None 파라미터/fixture actionHandoff 키) 확정. 실행 구조: Wave 1(4 병렬 fork = A CORE[models.py+action_handoff.py+orchestrator.py], B LLM[llm_client.py], C API+DI[schemas.py+main.py], D fixtures[demo_fixtures.json]) → Wave 2(2 병렬 fork = E tests[pbt+unit], F docs[code-summary+README]) → 오케스트레이터 통합(config 확인 Step8, 비회귀 note Step11, py_compile 스모크). NFR 최소화(§0): 신규 config/인프라 0(DEMO_MODE+LLM_TIMEOUT 재사용), 테스트 최소 세트. 비회귀 보호: orchestrator `action_handoff` 파라미터 default=None → 기존 test_orchestrator.py 무수정 유지. 빌드·테스트 실행은 Build & Test 단계로 이관.
+**Context**: CONSTRUCTION (re-entry) / U1 Code Generation (증분) — Part 1 APPROVED, Part 2 멀티에이전트 생성 시작
+
+---
+
+## CR-001 — U1 Code Generation (증분) Part 2 멀티에이전트 생성 완료 → 스테이지 승인 게이트
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: (n/a — 자동화된 background task-notification은 사용자 승인/입력 아님. 마지막 실사용자 입력은 "승인할게. 멀티에이전트로 진행해줘")
+**AI Response**: Part 2 fork 멀티에이전트 실행 완료. **Wave 1(4 병렬 fork)**: A CORE(`models.py` ActionPrompt+AdviceResult.action_prompt, 신규 `action_handoff.py` C11 하이브리드, `orchestrator.py` step 8 try/except 비차단), B LLM(`llm_client.py` ActionPromptRequest+generate_action_prompt: ABC/Bedrock/Fixture), C API+DI(`schemas.py` ActionPromptDTO+actionHandoff, `main.py` DI+매퍼), D fixtures(`demo_fixtures.json` actionHandoff 3시나리오). **Wave 2(2 병렬 fork)**: E tests(`tests/pbt/test_action_handoff.py` INV-HANDOFF-1/2/5, `tests/unit/test_action_handoff.py` INV-HANDOFF-3/4·최소 유용성 4요소·demoMode 재현·e2e), F docs(`code-summary.md` CR-001 섹션, `README.md` actionHandoff/demoMode). **검증**: 전 변경 `.py` py_compile PASS, `demo_fixtures.json` JSON valid, CORE 통합 스모크 PASS(REUSE→['Customer 360 Dashboard'], DEVELOP→[], 정합가드 ValueError, INV-HANDOFF-1/2), 인터페이스 정합 대조 완료(생성자 파라미터/LLMClient ABC 3메서드/FixtureLLMClient(dict)/submit_intent·advise·overall_decision·ranking·is_recommendation·ClassificationConfig·PermissionContext 모두 정본 일치 — 드리프트 없음). **Step 8**: config.py 확인 — DEMO_MODE+LLM_TIMEOUT_SECONDS 이미 존재, 신규 플래그 불필요(§0 충족, 무변경). **Step 11**: 기존 공개 DTO/테스트·P1~P11 불변, actionHandoff optional/nullable 추가만 → 비회귀. **환경 제약**: 웹 계층 런타임 import는 fastapi 미설치로 미실행(환경 의존성, 코드 결함 아님) — pytest·runtime 실제 실행은 Build & Test 단계로 이관(계획 명시). 계획 체크박스 Step 1~11 전부 [x] 갱신. Code Generation(증분) 스테이지 완료 → 2-옵션 승인 게이트 제시(🔧 Request Changes / ✅ Continue → Build & Test).
+**Context**: CONSTRUCTION (re-entry) / U1 Code Generation (증분) — Part 2 완료, 스테이지 승인 대기
+
+---
+
+## CR-001 — U1 Code Generation (증분) Part 2 APPROVED + 커밋/푸시 요청
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "승인 커밋하고 푸시 먼저 해줘"
+**AI Response**: Code Generation(증분) 스테이지 **APPROVED** (Continue to Next Stage). 사용자 요청대로 Build & Test 진입 전 먼저 변경사항 커밋·푸시 수행. 커밋 범위: 신규 3파일(`app/components/action_handoff.py`, `tests/pbt/test_action_handoff.py`, `tests/unit/test_action_handoff.py`) + 수정 코드 6(`models.py`/`llm_client.py`/`orchestrator.py`/`main.py`/`schemas.py`/`demo_fixtures.json`) + `README.md` + aidlc-docs 4(`aidlc-state.md`/`audit.md`/`code-generation-plan.md`/`code-summary.md`). 브랜치 `feat/action-handoff` → `origin/codex/action-handoff` push. 이후 Build & Test 단계 진행 예정.
+**Context**: CONSTRUCTION (re-entry) / U1 Code Generation (증분) — Part 2 APPROVED → 커밋/푸시 → Build & Test
+
+---
+

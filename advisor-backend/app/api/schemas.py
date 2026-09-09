@@ -74,6 +74,13 @@ class EvidenceChainDTO(BaseModel):
     stateRationale: str
 
 
+class ActionPromptDTO(BaseModel):
+    """CR-001 Action Handoff 공개 DTO. §3.2 계승 — 후보 id·내부 사유 필드 부재(grounding-only)."""
+    decisionState: str                  # = overallDecision (INV-HANDOFF-1)
+    promptText: str                     # Copy 대상 자연어 Prompt 전문
+    targetAssetNames: List[str]         # REUSE/EXTEND의 접근 가능 대상 Asset명; DEVELOP/NEEDS_REVIEW → []
+
+
 class AdviceResponse(BaseModel):
     resultId: str
     ranking: List[RankedCandidateDTO]
@@ -81,6 +88,7 @@ class AdviceResponse(BaseModel):
     overallRationale: str
     isRecommendation: bool
     evidenceChains: List[EvidenceChainDTO]
+    actionHandoff: Optional[ActionPromptDTO] = None  # CR-001; 생성 실패/부재 시 null(비차단)
     # ⚠️ excludedCount / excludedFlag / excludedCandidates 없음(FR-8/NFR-4)
 
 
