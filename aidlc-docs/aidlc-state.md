@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-09-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - U1 (Advisor Backend) Code Generation Part 2 (Generation) — Plan APPROVED (Step 0~11); executing Step 0 (기능설계 §7.5 정합)
+- **Current Stage**: CONSTRUCTION - U1 (Advisor Backend) Code Generation Part 2 (Generation) — Steps 0~11 완료 (12/12); awaiting stage approval (Request Changes / Continue to Next Stage → Build and Test)
 - **Discovery Input**: docs/aidlc/discovery-input.md (sole Evidence/input source per user constraint)
 
 ## Workspace State
@@ -43,7 +43,7 @@
 - [x] NFR Requirements — U1 APPROVED (nfr-requirements.md, tech-stack-decisions.md; Top-N config 조정 가능 반영)
 - [x] NFR Design — U1 APPROVED (nfr-design-patterns.md + logical-components.md; Q1=C evaluationStatus 계약, PBT P1~P11)
 - [x] Infrastructure Design — SKIPPED (mock data, no cloud provisioning for MVP)
-- [~] Code Generation — U1 IN PROGRESS (Part 1 Planning)
+- [~] Code Generation — U1 Part 2 완료 (Steps 0~11, 12/12); awaiting stage approval
 - [ ] Build and Test — EXECUTE
 
 ### 🟡 OPERATIONS PHASE
