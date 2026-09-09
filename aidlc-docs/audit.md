@@ -318,3 +318,26 @@
 **Timestamp**: 2026-09-09T00:00:00Z
 **AI Response**: Part 2 Step 1~11 순차 실행 완료 (Step 0 이후). Step 1 프로젝트 구조(advisor-backend/ 트리 + __init__.py + requirements.txt·.env.example). Step 2 config.py(env override·임계값 제약 폴백 P9)·logging_setup.py(구조화+내부 감사 로거). Step 3 domain/models.py(evaluationStatus·nullable score·technicalFailureReason 내부 전용·ExcludedCandidate 내부 전용)+errors.py(§1.6 코드·공개message/내부detail 분리). Step 4 asset_repository·feedback_store(JSONL append)·adapters(base/registry/mock). Step 5 llm_client.py(LLMClient + BedrockClaudeClient 재시도없음 + FixtureLLMClient 미매칭→DemoFixtureNotFound). Step 6 data(assets.json 12개 per-asset 권한·evidence.json 35 레코드·demo_fixtures.json Hero+3 Unhappy). Step 7 decision_classifier.py(순수 §7.3)+PBT test_decision_classifier.py(P1~P11)+예제 경계 테스트. Step 8 C1~C5·C7·C8 컴포넌트 + test_components.py + conftest.py. Step 9 orchestrator.py(S1 동기 순차·실패 매트릭스·BR-RANK·capabilityMatch·excluded 내부 감사) + test_orchestrator.py(Hero+3 Unhappy e2e). Step 10 api/schemas.py(공개 DTO, 내부·제외 필드 부재 §3.2)·api/errors.py(HTTP↔code §1.6)·main.py(FastAPI DI 조립·예외 핸들러 내부 문자열 미노출) + test_api.py + requirements httpx 추가. Step 11 code-summary.md + README.md. 검증: py_compile 전체 통과, 도메인/컴포넌트/오케스트레이터 import + mock 로드(12 assets·6 adapters) 정상. 계획서 Step 1~11 체크박스 전부 [x]. 테스트는 생성만(실행/통과는 Build & Test 단계). 표준 2옵션 완료 메시지 제시 예정.
 **Context**: CONSTRUCTION - Code Generation U1 (Part 2 — Steps 1~11 완료, 12스텝 전체 완료)
+
+## Code Generation (U1) — APPROVED → Build and Test 진입
+**Timestamp**: 2026-09-09T00:00:00Z
+**AI Prompt**: "Code Generation (U1) Part 2 완료 (Steps 0~11, 12/12). 1) Request Changes 2) Continue to Next Stage → Build and Test"
+**User Input**: "2"
+**AI Response**: Code Generation (U1) 승인됨. aidlc-state.md Code Generation [x] 완료, Build and Test EXECUTE로 갱신. Build and Test 규칙 로드(construction/build-and-test.md). 범위: 코드 생성이 완료된 U1(Advisor Backend)만 대상(U2 Web UI는 코드 생성 미수행 → pending, 요약에 명시). build-and-test/ 하위에 build-instructions.md·unit-test-instructions.md·integration-test-instructions.md·performance-test-instructions.md·build-and-test-summary.md 생성 예정.
+**Context**: CONSTRUCTION - Code Generation U1 APPROVED → Build and Test (U1 scope)
+
+## Build and Test Stage (U1)
+**Timestamp**: 2026-09-09T00:00:00Z
+**Build Status**: Success (venv+pip 설치, compileall 통과, create_app 조립 import + mock 로드 12 assets·6 adapters 정상)
+**Test Status**: Pass (44/44, coverage 92%)
+**AI Response**: Build and Test 규칙(construction/build-and-test.md) 실행. U1 범위(U2 Web UI 코드 생성 미수행 → pending 명시). advisor-backend/.venv 생성 후 requirements 설치, pytest 실행 → 44 passed(pbt 10 · classifier examples 10 · components 11 · orchestrator 5 · api 8), pytest-cov TOTAL 92%. 검증된 계약: evaluationStatus(P1/P11), 기술실패↛DEVELOP(P5/P10), 랭킹 결정성(P8), Type-Enforced Non-Disclosure(§3.2 공개 응답 내부/제외 필드 부재), 오류 매핑(§1.6 400/422/502). Performance는 지침만 제공(미실행, N/A). main.py는 디스크에서 로깅 초기화 순서 개선(configure_logging→Config.load, P9 경고 캡처)으로 갱신됨 — 정상 수용, 테스트 통과. 생성 파일: build-instructions.md, unit-test-instructions.md, integration-test-instructions.md, performance-test-instructions.md, build-and-test-summary.md. aidlc-state 갱신(Code Generation [x] APPROVED, Build and Test [~] 완료·승인 대기).
+**Files Generated**:
+- build-instructions.md
+- unit-test-instructions.md
+- integration-test-instructions.md
+- performance-test-instructions.md
+- build-and-test-summary.md
+**AI Prompt**: "Build and Test 완료(44/44 pass, 92% coverage). Request Changes / Approve & Continue → Operations?"
+**Context**: CONSTRUCTION - Build and Test U1 완료, 승인 대기
+
+---

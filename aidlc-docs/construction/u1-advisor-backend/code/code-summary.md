@@ -35,7 +35,7 @@
 
 ### 데이터 (`advisor-backend/data/`)
 - `assets.json` — 12 Asset(per-asset `allowedRoles`/`allowedUsers` + 정규화 필드).
-- `evidence.json` — 35 Evidence 레코드(6 Source: GitHub/Confluence/Jira/IMS/BizForce/EDM).
+- `evidence.json` — 36 Evidence 레코드(6 Source: GitHub/Confluence/Jira/IMS/BizForce/EDM).
 - `demo_fixtures.json` — Hero + 3 Unhappy 결정적 fixture(structure + reverify).
 
 ### 테스트 (`advisor-backend/tests/`)
@@ -44,6 +44,7 @@
 - `unit/test_components.py` — C1~C5,C7,C8 예제 기반(LLM Fixture 주입).
 - `unit/test_orchestrator.py` — Hero + 3 Unhappy end-to-end.
 - `unit/test_api.py` — 라우트·DTO 비노출·오류 매핑.
+- `unit/test_demo_coverage.py` — 데모 fixture 커버리지 회귀 가드(Top-N ⊆ reverify fixture, 시나리오 키 정합).
 - `unit/conftest.py` — repository/registry fixture.
 
 > 문서 정합(Step 0): `functional-design/{domain-entities,business-rules,business-logic-model}.md`를

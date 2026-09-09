@@ -6,6 +6,7 @@
 """
 from __future__ import annotations
 
+import os
 import uuid
 
 from fastapi import FastAPI, Request
@@ -85,8 +86,12 @@ def _build_llm(config: Config) -> LLMClient:
 
 
 def create_app(config: Config | None = None) -> FastAPI:
-    config = config or Config.load()
-    configure_logging(config.log_level)
+    # 로깅을 먼저 설정해 Config.load()의 임계값 폴백(P9) 경고까지 구조화 로거로 캡처(#5).
+    if config is None:
+        configure_logging(os.getenv("LOG_LEVEL", "INFO").upper())
+        config = Config.load()
+    else:
+        configure_logging(config.log_level)
     orchestrator = build_orchestrator(config)
 
     app = FastAPI(title="Reuse Advisor Backend (U1)", version="1.0.0")

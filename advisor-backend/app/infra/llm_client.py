@@ -70,11 +70,11 @@ class FixtureLLMClient(LLMClient):
                 f"structure fixture 미존재: {self._key(raw_text)!r}"
             )
         return StructuredIntent(
-            role=entry.get("role", ""),
-            goal=entry.get("goal", ""),
-            function=entry.get("function", ""),
-            data=entry.get("data", ""),
-            output=entry.get("output", ""),
+            role=entry.get("role") or "",
+            goal=entry.get("goal") or "",
+            function=entry.get("function") or "",
+            data=entry.get("data") or "",
+            output=entry.get("output") or "",
         )
 
     def reverify(self, intent: StructuredIntent, candidate: Candidate) -> ReverifyOutcome:
@@ -160,12 +160,13 @@ class BedrockClaudeClient(LLMClient):
             data = json.loads(text)
         except json.JSONDecodeError as e:
             raise IntentStructuringError(f"구조화 응답 파싱 실패: {e}") from e
+        # LLM이 명시적 null을 반환해도 빈 문자열로 강제(누락 검출/‘.strip()’ 안전)
         return StructuredIntent(
-            role=data.get("role", ""),
-            goal=data.get("goal", ""),
-            function=data.get("function", ""),
-            data=data.get("data", ""),
-            output=data.get("output", ""),
+            role=data.get("role") or "",
+            goal=data.get("goal") or "",
+            function=data.get("function") or "",
+            data=data.get("data") or "",
+            output=data.get("output") or "",
         )
 
     def reverify(self, intent: StructuredIntent, candidate: Candidate) -> ReverifyOutcome:

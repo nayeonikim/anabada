@@ -36,7 +36,8 @@ class IntentStructuringComponent:
     def detect_missing_fields(intent: StructuredIntent) -> list[str]:
         missing = []
         for field in REQUIRED_INTENT_FIELDS:
-            if not getattr(intent, field, "").strip():
+            # None(누락/명시적 null)도 빈 값으로 취급 — '.strip()' 안전
+            if not (getattr(intent, field, "") or "").strip():
                 missing.append(field)
         return missing
 
