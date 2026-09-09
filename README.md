@@ -76,7 +76,7 @@ EDM ──────────┘
 
 ## Demo
 
-기본 실행은 **Demo Mode**입니다. 실제 AWS 호출 없이 결정적 Fixture를 사용하므로 심사와 Demo Media에서 동일한 결과를 안정적으로 재현할 수 있습니다.
+기본 실행은 **Demo Mode**입니다. 실제 구현은 사내 자산을 연결할 수 있는 Adapter 구조로 설계되어 있지만, 공개 Demo에서는 사내 자산에 직접 접근할 수 없으므로 실제 AWS 호출 대신 결정적 Fixture를 사용합니다. 이를 통해 심사와 Demo Media에서도 동일한 결과를 안정적으로 재현할 수 있습니다.
 
 ### Hero Scenario
 
