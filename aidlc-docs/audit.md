@@ -677,3 +677,45 @@ Q9=B (데스크톱 전용)
 **Context**: 통합 완료(`8f5b172`) + 통합 후 검증 4종 PASS. main 반영/PR은 사용자 지시 대기.
 
 ---
+
+## CR-001 — 최신 origin/main(UI 리디자인 반영) 재통합(rebase) + 재검증 3스트림
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "1차 통합 결과는 확인했어. 다만 보고서의 기준 origin/main=0b2ff9f는 UI 통합 이전 커밋이야. 이후 main에 UI 리디자인이 병합됐으니 PR 준비보다 최신 main 반영을 먼저 해줘. 1. fetch 후 실제 origin/main SHA와 현재 통합 브랜치의 포함 여부를 확인한다. 2. 최신 main이 빠져 있으면 현재 작업을 보존하고 integration/action-handoff-on-main을 최신 origin/main으로 rebase한다. 3. 완료 후 멀티에이전트로 병렬 진행한다: - 백엔드: 회귀 테스트 + Action Handoff 계약·비차단 실패 검증 - 프론트: 빌드·타입 검사 + 최신 UI 핵심 흐름 스모크 검증 - U2 설계: 실제 최신 UI와 승인된 US-6.2 기준 최소 증분 설계·코드 생성 계획 작성 4. 주 에이전트만 state/audit를 갱신한다. 동일 파일 동시 수정은 피한다. 5. 검증한 main SHA와 최종 통합 SHA를 명시하고, U2 설계·계획을 승인받을 수 있게 제시한다. 아직 PR 생성이나 US-6.2 구현은 시작하지 않는다."
+**AI Response**: (1) **fetch + 포함 여부 확인**: `git fetch origin --prune` → 실제 `origin/main` = **`e4111ef`**(1차 보고서 기준 `0b2ff9f`가 아니라, 이후 UI 리디자인 `b71b09f`(Anabada 검색형 라이트 UI) + a11y 수정 4종 + `.gitignore` + README 재작성이 병합된 최신). `git log HEAD..origin/main` = 8커밋 → 통합 브랜치가 최신 main을 **미포함** 확인. `merge-base` = `0b2ff9f`(UI 이전). (2) **보존 + rebase**: 워크트리 clean·stash 0 확인 후 pre-rebase HEAD(`8f33fa6`)를 백업 브랜치 `backup/pre-rebase-e4111ef-8f33fa6`로 보존 → `git rebase origin/main`. CR-001 2커밋(backend 통합 + docs) replay, **충돌은 문서 2종만**(`aidlc-state.md`·`audit.md`): audit는 양측 감사 로그 union(main UI 리디자인 4항목 + CR-001 항목 병존), state는 실제 새 베이스 `e4111ef` 반영해 통합 해소. 백엔드·frontend 소스 무충돌. 최종 통합 HEAD = **`dc6c6ea`**, `merge-base --is-ancestor origin/main HEAD`=YES(최신 main 완전 포함), 워크트리 clean. (3) **멀티에이전트 병렬 재검증(3스트림, 새 베이스 `e4111ef` 기준)**: 
+  - **백엔드**(READ+RUN, opus): `.venv` pytest `tests/` = **72 passed / 2 skipped / 0 failed**(baseline 동일, 회귀 0). 계약 — 라이브 `/advise`(TestClient, demo Hero) → `actionHandoff={decisionState:"REUSE", promptText 702자·4섹션, targetAssetNames:["Customer 360 Dashboard"]}`, camelCase 3키만, 내부/미인가 필드 비노출(`schemas.py:77-91`, `main.py:230-238`). 비차단 — `test_inv_handoff_4_non_blocking` PASS(실패→`actionHandoff=null`, Decision/Evidence/랭킹 유지, `orchestrator.py:136-153`). 
+  - **프론트**(READ+RUN, opus): `npm install`+`npm run build` 성공 **40 modules**(리디자인 UI 반영 → 이전 38에서 증가), `tsc --noEmit` strict **0 errors**. 핵심 흐름 코드 트레이스 정상: SearchHome submit→`runSearch`(`/intent`→`/advise`, `App.tsx:61-105`)→ProgressSteps(percent 25→55→90→100)→VerdictBanner+CandidateList→피드백→"새 질문하기" 리셋(`goHome`). actionHandoff **미소비 확정**(`frontend/src` 전역 grep 무매치, `api/types.ts:71-78` AdviceResponse에 필드 없음) → US-6.2 진짜 미구현. 
+  - **U2 설계**(fork): 신규 문서 2종만 작성(제한 파일 무수정) — `aidlc-docs/change-requests/CR-001-u2-action-handoff-design-delta.md`(최소 증분 설계: `ActionHandoffPanel.tsx` 신규 1개, `types.ts` 계약 미러, 기존 `.block`/`.ai-answer`/`.badge`/`.btn`/`.confirmation`/`.error-text` 재사용, null 부재 안내, Copy+a11y, 신규 의존성 0) + `aidlc-docs/construction/plans/u2-web-ui-cr-001-us-6.2-code-generation-plan.md`(S1~S7 체크리스트 + AC↔구현 매핑 + 오픈이슈 Q1 배치/Q2 대상자산줄/Q3 테스트범위). US-6.2 AC 원문 `stories.md:168-175` 인용. **구현 미착수(PLAN ONLY)**. (4) state/audit는 주 에이전트(본 세션)만 갱신, 검증 에이전트는 read-only, 설계 에이전트는 전용 신규 파일만 → 동시 수정 0. (5) 검증 main SHA `e4111ef` / 최종 통합 SHA `dc6c6ea` 명시, U2 설계·계획 + 오픈이슈 3건 승인용 제시. **PR 생성·US-6.2 구현 미착수**(사용자 지시 준수).
+**Context**: 최신 main(`e4111ef`) 재통합(`dc6c6ea`) + 3스트림 재검증 PASS + U2 설계·계획 초안 작성. PR/구현은 승인·지시 대기.
+
+---
+
+## CR-001 U2 (US-6.2) — AI-DLC 편입 + Code Generation(증분) Part 1(Planning) 승인 프롬프트
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "U2설계는 ai-dlc workflow로 진행해야 할거같은데"
+**AI Response**: 사용자 지시에 따라 U2 Action Handoff 표시·Copy(US-6.2)를 임의 단독 산출물이 아니라 **AI-DLC CONSTRUCTION → Code Generation(증분·U2 Web UI)** 단계로 편입(`.aidlc-rule-details/construction/code-generation.md` 로드·준수). 단계 판정: per-unit 루프에서 Functional/NFR/Infra Design=**SKIP**(신규 도메인/NFR/인프라 없음 — CR-001 실행계획 `CR-001-execution-plan-delta.md` 기승인), Application Design 책임은 CR-001 AD증분(D1 `/advise` actionHandoff + U2 표시 책임) 기승인 + U2 상세 설계델타로 보강. **Part 1(Planning) 산출물** = `construction/plans/u2-web-ui-cr-001-us-6.2-code-generation-plan.md`(S1 types → S2 신규 `ActionHandoffPanel.tsx` → S3 App 배선 → S4 styles 재사용 → S5 fixtures 확인 → S6 build/tsc 검증 → S7 code-summary) + 설계델타 `change-requests/CR-001-u2-action-handoff-design-delta.md`(US-6.2 AC↔구현 매핑, 기존 시각언어 재사용, 신규 의존성 0). 표준 2옵션 게이트(Request Changes / Continue to Next Stage) + 오픈이슈 3건(Q1 배치=CandidateList 하단 권장 / Q2 대상 자산 줄 표시 권장 / Q3 검증=tsc+build+데모 스모크로 한정 권장) 승인 요청. **Part 2(구현/코드 생성) 미착수 — 승인 대기.**
+**Context**: CONSTRUCTION - Code Generation(증분·U2 Web UI) Part 1(Planning) 승인 게이트
+
+---
+
+## CR-001 U2 — UI Design(증분) 정식 편입 + 시안 작성
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "state를 확인하고 workflow를 재개해줘. 아직 Code Generation Part 2는 시작하지 마. U2 UI Design을 AI-DLC workflow에 정식으로 반영해서 진행해줘. 현재 integration/action-handoff-on-main 브랜치를 유지하고, 저장소 workflow rule 및 기존 UI 리디자인의 실행계획·설계·승인 절차를 확인해라. 그 절차에 맞춰 CR-001 U2의 필요한 설계 단계를 실행계획/state에 명시해줘. 기존 백엔드 계약과 표시 책임 승인을 UI 상세 설계 승인으로 간주하지 않는다. 작성한 U2 설계 델타와 코드 생성 계획은 초안으로 재사용하되, Q1·Q2·Q3 권장안을 자동 확정하지 않는다. 최신 UI를 기준으로 다음을 설계하고 검토 가능한 화면 시안과 함께 제시해줘. - Action Handoff 위치와 정보 계층 - Decision·대상 Asset·Prompt 표현 - Copy 성공/실패 및 Prompt 부재 상태 - NEEDS REVIEW 표현 - 반응형·키보드 접근성 - 기존 UI 스타일과의 일관성. UI Design 승인 후 코드 생성 계획을 정합화하고, workflow의 승인 게이트를 거쳐 구현·Build & Test로 진행해줘."
+**AI Response**: state·workflow rule(`.aidlc-rule-details/`)·기존 UI 리디자인 절차(CR#2 = Application Design Minimal 게이트) 확인. CR-001 U2 표시를 **① U2 UI Design(증분, 신규 게이트) → ② U2 Code Generation(증분)** 으로 분리해 실행계획/state에 정식 편입. AD(증분) D1의 *계약 + 표시 책임* 승인은 UI 상세 설계 승인이 아님을 명시. 실제 최신 UI(App/VerdictBanner/CandidateList/styles.css) + 계약(schemas.py) + 픽스처(demo_fixtures.json 3시나리오) 대조 후 UI Design 산출물 작성.
+**Context**: CONSTRUCTION - U2 UI Design(증분) 편입 · 초안 재사용/승계
+
+---
+
+## CR-001 U2 UI Design — 배치 결정(디자인 리뷰, 사용자 이미지 제공)
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "design을 한번더 검토하려고하는데, [이미지: action_prompt_recommandation.png] 우리가 이 action-handoff 즉 추천 프롬프트를 이런 디자인으로 가고 싶거든" → (후속) "다만 backend계약을 전체 판정에 대한 단 하나의 프롬프트라고 했던걸 후보별 프롬프트로 수정해야할 것같긴한데 우선 시간이 촉박해서, 추후 여유가 있을 때 후보별 프롬프트까지 확장하는거로 할게. 최종판정 배너에만 넣어야겠다. 근데 우리 이미지도 최종판정 배너에 있을텐데 버튼이" → (확정) "응 1로 할게"
+**AI Response**: 이미지 방향 = `✨ 추천 프롬프트`를 기존 탭 시각언어에 통합. 백엔드는 전체 판정 프롬프트 1개만 제공(후보별 없음)을 고지. 배치 후보 3안(배너 탭 / 후보 카드 탭 / 둘 다)과 배너 탭 스트립 구성 2안(프롬프트 탭만 / 4탭 전부) 제시. **사용자 확정**: (a) 배치 = **최종 판정 배너에만**, (b) 배너 = **`✨ 추천 프롬프트` 단일 탭만**(AI 요약 답변 유지), (c) **후보별 프롬프트(백엔드 계약 확장)는 후속 이터레이션으로 연기**. 초안 델타 D1(하단 별도 패널) → 탭 기반으로 대체(SUPERSEDED).
+**Context**: CONSTRUCTION - U2 UI Design(증분) 배치 확정
+
+---
+
+## CR-001 U2 UI Design(증분) — 산출물 작성 완료, 승인 게이트 제시
+**Timestamp**: 2026-09-09T00:00:00Z
+**AI Response**: 산출물 작성 — (1) `change-requests/CR-001-u2-ui-design.md`(authoritative): 승인 범위 구분(§0), 계약 소비(§2), 확정 배치·정보 계층(§3), **검토용 시안 M1~M6**(REUSE hero·Copy 성공/실패·NEEDS REVIEW·DEVELOP·부재(null)·반응형 ≤720px), 컴포넌트 설계(§5: 신규 `ActionHandoffTab.tsx` + `VerdictBanner`/`App`/`types` 편집, 데이터 흐름·의사설계), 접근성·반응형 표(§6), 열린 결정(§7), 영향/비회귀(§8). (2) `CR-001-u2-ui-design-questions.md`: Q-TARGET(대상 자산 줄)/Q-NULL(부재 안내 위치)/Q-LABEL(NEEDS REVIEW·DEVELOP 라벨)/Q-TEST(검증 범위) — `[Answer]:` 형식, 권장안 표기·자동 확정 안 함. (3) 초안 델타 SUPERSEDED 헤더. (4) 실행계획 delta §3/§5 정정(U2 UI Design NEW EXECUTE 삽입, U1 COMPLETED 반영). (5) 코드생성 계획 정합화 대기 note. (6) state 갱신. 6개 화면 상태 커버, 신규 의존성 0, 기존 시각언어 재사용. **표준 2옵션 게이트(Request Changes / Continue to Next Stage)** 제시. **구현 미착수(PLAN ONLY), Code Generation Part 2 미시작(사용자 지시 준수).**
+**Context**: CONSTRUCTION - U2 UI Design(증분) 승인 게이트
+
+---
