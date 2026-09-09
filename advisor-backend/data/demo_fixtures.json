@@ -1,0 +1,83 @@
+{
+  "_note": "demoMode 결정적 fixture (NFR Design §1.2/§2.3). structure는 /intent(rawText 키), reverify는 /advise(intent.function 키 → candidateId). 미매칭 입력은 DEMO_FIXTURE_NOT_FOUND 오류.",
+  "_scenarios": {
+    "hero": "Sales가 Customer 360 대시보드 요청 → asset-001 REUSE (Overall REUSE)",
+    "unhappy-needs-review": "Developer가 legacy 공통 라이브러리 요청 → deprecated asset-007 근거부족 NEEDS_REVIEW (Overall NEEDS_REVIEW)",
+    "unhappy-develop": "Sales가 릴리스 자동화 스크립트 요청 → 접근 가능 관련 자산 0 → DEVELOP",
+    "unhappy-clarify": "불완전 의도 → ClarificationRequest (role/data 누락)"
+  },
+
+  "structure": {
+    "고객의 Project, Forecast, Risk, 요청사항을 한 화면에서 조회하는 대시보드를 만들고 싶어요": {
+      "role": "Sales",
+      "goal": "고객 현황 통합 조회 대시보드 구성",
+      "function": "customer overview dashboard",
+      "data": "customer project forecast risk request",
+      "output": "dashboard"
+    },
+    "예전 프로젝트에서 쓰던 공통 기능 라이브러리를 재사용하고 싶어요": {
+      "role": "Developer",
+      "goal": "공통 기능 재사용",
+      "function": "legacy common utilities",
+      "data": "shared components",
+      "output": "library"
+    },
+    "릴리스 버전 체크와 아티팩트 검증을 자동화하는 스크립트가 필요해요": {
+      "role": "Sales",
+      "goal": "릴리스 자동화 스크립트 구성",
+      "function": "release version checklist automation script",
+      "data": "build artifact version",
+      "output": "script"
+    },
+    "대시보드 하나 만들어줘": {
+      "role": "",
+      "goal": "대시보드 생성",
+      "function": "dashboard",
+      "data": "",
+      "output": "dashboard"
+    }
+  },
+
+  "reverify": {
+    "customer overview dashboard": {
+      "asset-001": {
+        "score": 0.92,
+        "reasoning": "Customer 360 Dashboard는 Project/Forecast/Risk/요청사항을 이미 통합 조회하며 Sales 역할의 고객 현황 파악 목표에 직접 부합한다.",
+        "roleTaskContextNote": "Sales 역할의 '고객 현황 통합 조회' Task 맥락에서 기능이 그대로 재사용 가능.",
+        "evidenceSufficient": true,
+        "insufficiencyReason": null
+      },
+      "asset-002": {
+        "score": 0.58,
+        "reasoning": "Forecast 시각화는 재사용 가능하나 Risk/Request 기능이 없어 목표 일부만 충족, 확장이 필요하다.",
+        "roleTaskContextNote": "Forecast 부분은 재사용, 통합 조회를 위해 확장 필요.",
+        "evidenceSufficient": true,
+        "insufficiencyReason": null
+      },
+      "asset-004": {
+        "score": 0.52,
+        "reasoning": "Request Tracking은 요청사항 관리에 부합하나 Forecast/Risk 통합 화면은 별도 확장이 필요하다.",
+        "roleTaskContextNote": "요청사항 관리 Task에 부분 재사용 가능.",
+        "evidenceSufficient": true,
+        "insufficiencyReason": null
+      }
+    },
+
+    "legacy common utilities": {
+      "asset-007": {
+        "score": 0.60,
+        "reasoning": "공통 기능 라이브러리로 목표와 유사하나 deprecated 상태이며 신규 Runtime 호환성 미검증·공식 Owner 부재로 실제 재사용 근거가 불충분하다.",
+        "roleTaskContextNote": "Developer의 공통 기능 재사용 Task에 유사하나 노후화 위험이 큼.",
+        "evidenceSufficient": false,
+        "insufficiencyReason": "deprecated 상태 + Runtime 호환성 미검증 + 공식 Owner 없음 → 재사용 적합성 판단 근거 부족"
+      },
+      "asset-008": {
+        "score": 0.55,
+        "reasoning": "범용 Automation Skill로 일부 공통 작업을 대체할 수 있으나 Pilot 검증 범위에 한정되어 확장 적용이 필요하다.",
+        "roleTaskContextNote": "반복 작업 자동화 맥락에서 부분 재사용/확장 가능.",
+        "evidenceSufficient": true,
+        "insufficiencyReason": null
+      }
+    }
+  }
+}
