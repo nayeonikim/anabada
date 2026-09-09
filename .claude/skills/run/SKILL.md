@@ -1,6 +1,6 @@
 ---
 name: run
-description: Launch and drive the anabada Rebuild-or-Reuse Advisor — U1 FastAPI backend (:8000) and U2 React+Vite web UI — and verify the demo end-to-end via a browser. Use when asked to run/start the app, screenshot it, or confirm a change works in the real app.
+description: Launch and drive the anabada Rebuild-or-Reuse Advisor — U1 FastAPI backend (:8000) and U2 React+Vite web UI. Use when asked to run/start the app, hand off a live visible browser demo to a human, screenshot it, or confirm a change works in the real app.
 ---
 
 # Run the anabada Advisor (backend + web UI)
@@ -11,6 +11,25 @@ Two apps in this repo:
 - `frontend/` — React + Vite + TS (U2). Vite dev server proxies `/intent`·`/advise`·`/feedback` → `http://localhost:8000` (see `frontend/vite.config.ts`), so run the backend first.
 
 This is Windows + Git Bash. Use `.venv/Scripts/python.exe` (not `bin/`). Background launches inherit the session cwd, so pass absolute paths and do NOT re-`cd` into a dir you're already in.
+
+## Two modes — pick by intent
+
+- **Live demo (hand off to a human)** — someone wants to click through the UI in a real, visible browser. → use "Live demo" below. Do NOT run the headless Playwright flow.
+- **Verify / screenshot (you drive)** — confirm a change works or capture a screenshot without a human. → use sections 1–4 (headless Playwright).
+
+## Live demo (hand off to a human)
+
+There is a self-contained launcher: [`scripts/demo.sh`](../../../scripts/demo.sh). Run it in the background — it starts the backend (reuses an already-running `:8000` if present), starts Vite, waits until both are healthy, opens the **default system browser** at the Vite URL, and stays up until stopped:
+
+```bash
+bash C:/Users/kimna/anabada/scripts/demo.sh   # run_in_background=true
+```
+
+- Read the launch output for the actual `UI : http://localhost:<port>/` (Vite auto-falls-back past taken ports) and tell the user that URL.
+- The script forces `DEMO_MODE=true` (no AWS creds needed) and cleans up the servers **it launched** on Ctrl+C / termination.
+- To open a browser yourself instead of the script (e.g. servers already up), use `cmd //c start "" "http://localhost:<port>/"`.
+- To stop it, terminate the background task (its trap tears down what it started), or fall back to the port-kill in section 4.
+- Set `ANABADA_NO_OPEN=1` to launch both servers without popping a browser.
 
 ## 1. Backend (:8000)
 

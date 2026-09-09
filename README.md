@@ -212,6 +212,20 @@ Repository에서 **Evidence → Requirement → Story → Architecture → Imple
 
 ## Quick Start
 
+### 빠른 실행 (원클릭)
+
+백엔드와 프론트엔드를 한 번에 띄우고 브라우저로 UI를 여는 런처 스크립트를 제공합니다. (Demo Mode 기본 · AWS Credential 불필요)
+
+```bash
+bash scripts/demo.sh
+```
+
+- 백엔드(:8000) + Vite 개발 서버를 함께 기동하고, 준비되면 기본 브라우저로 UI를 엽니다.
+- 종료: 실행한 터미널에서 `Ctrl+C` — 두 서버 모두 정리됩니다.
+- macOS / Linux / **Windows는 Git Bash**에서 실행하세요. 최초 실행 시 의존성(venv · npm)을 자동 설치합니다.
+
+아래 수동 절차는 스크립트 없이 단계별로 실행하거나 문제를 진단할 때 사용합니다.
+
 ### Requirements
 
 - Python 3.11+
