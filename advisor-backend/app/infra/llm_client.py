@@ -236,6 +236,7 @@ def _build_action_prompt(req: ActionPromptRequest) -> str:
 
     아래 근거(req)만 사용해 외부 AI 개발 도구에 붙여 쓸 **도구 비종속 실행 Prompt 전문**을
     생성하도록 지시한다. 목표·근거·다음 작업·확인 사항 4요소 포함, 근거 밖 생성(환각) 금지.
+    인용한 대상 자산/자료는 [근거 요약]에 주어진 참조(source_ref)를 본문에 함께 표기.
     """
     intent = req.intent
     targets = ", ".join(req.target_asset_names) if req.target_asset_names else "(없음 — 신규 개발)"
@@ -254,7 +255,8 @@ def _build_action_prompt(req: ActionPromptRequest) -> str:
         "붙여 넣어 쓸 수 있는 **도구 비종속 실행 Prompt 전문**을 작성한다. 사용자 입력 언어(기본 한국어, "
         "기술 용어는 영문 혼용 가능)로, 아래 4개 섹션을 모두 포함한 자연어 본문만 출력하라(머리말/메타 설명 금지):\n"
         "1) 목표(Goal): 이번 권고 목적에 맞는 다음 개발 목표\n"
-        "2) 근거(Rationale): 제공된 근거 요약(아래 근거 밖 내용 생성 금지)\n"
+        "2) 근거(Rationale): 제공된 근거 요약. 인용한 대상 자산/자료는 [근거 요약]에 주어진 "
+        "참조(각 줄 '(참조: ...)' 값)를 'Source: ref' 형태로 함께 표기하라(아래 근거 밖 내용 생성 금지)\n"
         "3) 다음 작업(Next Actions): 도구 비종속 실행 단계\n"
         "4) 확인 사항(Checks): 진행 전 확인/검증 항목. **확인되지 않은 Gap·전제는 사실로 단정하지 말고 "
         "확인 질문 형태로** 표현하라.\n\n"

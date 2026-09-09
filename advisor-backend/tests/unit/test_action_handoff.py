@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from app.components.action_handoff import ActionHandoffComponent
+from app.components.action_handoff import ActionHandoffComponent, _evidence_lines
 from app.components.asset_search import AssetSearchComponent
 from app.components.candidate_selection import CandidateSelectionComponent
 from app.components.evidence_builder import EvidenceBuilderComponent
@@ -27,10 +27,13 @@ from app.domain.models import (
     CandidateState,
     ClassificationConfig,
     EvaluationStatus,
+    EvidenceChain,
+    EvidenceItem,
     LifecycleStatus,
     OverallDecision,
     PermissionContext,
     RankedCandidate,
+    SourceId,
     StructuredIntent,
 )
 from app.infra.feedback_store import FeedbackStore
@@ -92,6 +95,25 @@ def test_min_utility_four_sections():
 # ── demoMode 재현(결정성, NFR-A3) ────────────────────────────────────
 def test_demo_mode_deterministic():
     assert _build_hero().prompt_text == _build_hero().prompt_text
+
+
+# ── 참조 표기: grounding 근거 라인이 source_ref 포함 ─────────────────
+def test_evidence_lines_include_source_ref():
+    """프롬프트 본문이 대상 자산의 참조(source_ref)를 표기할 수 있도록 grounding 에 노출."""
+    chain = EvidenceChain(
+        candidate_id="asset-001",  # _hero_ranking()[0].candidate_id 와 일치
+        evidence_items=[
+            EvidenceItem(
+                source=SourceId.JIRA,
+                evidence_type="feature_history",
+                title="Customer 360 Risk / Request Enhancement",
+                source_ref="SALES-2841",
+            )
+        ],
+        state_rationale="",
+    )
+    lines = _evidence_lines(OverallDecision.REUSE, _hero_ranking(), [chain])
+    assert any("SALES-2841" in line for line in lines)
 
 
 # ── INV-HANDOFF-3: 비노출(grounding-only) ────────────────────────────
@@ -160,3 +182,5 @@ def test_demo_mode_e2e_reuse(registry, repository, tmp_path):
     assert result.action_prompt.target_asset_names == ["Customer 360 Dashboard"]
     for marker in ("【목표】", "【근거】", "【다음 작업】", "【확인 사항】"):
         assert marker in result.action_prompt.prompt_text
+    # 프롬프트 본문이 대상 자산의 참조(source_ref)를 포함
+    assert "SALES-2841" in result.action_prompt.prompt_text

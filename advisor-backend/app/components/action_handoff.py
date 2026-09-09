@@ -65,10 +65,15 @@ def _evidence_lines(
     ranking: list[RankedCandidate],
     evidence_chains: list[EvidenceChain],
 ) -> list[str]:
-    """grounding 근거 라인(공개 투영만). "[Source/type] title" 포맷."""
+    """grounding 근거 라인(공개 투영만). "[Source/type] title (참조: sourceRef)" 포맷.
+
+    source_ref 는 이미 공개 투영(EvidenceItemDTO.sourceRef)이라 grounding 에 포함해도
+    비노출 원칙(INV-HANDOFF-3)에 위배되지 않는다. 프롬프트 본문이 대상 자산을 언급할 때
+    근거 자료의 참조 식별자를 함께 표기할 수 있도록 노출한다.
+    """
     def fmt(chain: EvidenceChain) -> list[str]:
         return [
-            f"[{it.source.value}/{it.evidence_type}] {it.title}"
+            f"[{it.source.value}/{it.evidence_type}] {it.title} (참조: {it.source_ref})"
             for it in chain.evidence_items
         ]
 
