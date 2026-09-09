@@ -376,3 +376,44 @@
 **Context**: CONSTRUCTION 완료 → OPERATIONS(placeholder). 사용자 요청으로 commit + push 수행.
 
 ---
+
+## New Change Request — UI 재디자인 (Anabada 검색형 UI)
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "aidlc-docs/inception/ui-design-comparison.md 이분석 문서를 바탕으로 UI 를 바꾸고 싶어, 이분석문서는 바탕화면에 ChatGPT Image 2026년 9월 9일 오전 11_42_19 File과 우리가 만든 UI를 비교한거야. AI DLC Workflow를 재개해줘"
+**AI Response**: 신규 변경 요청 접수 — 기존 U2 Web UI(다크 3컬럼 대시보드)를 목표 목업(Anabada 라이트 검색형 2단계 흐름)으로 재디자인. 워크플로우 재개: (1) 웰컴 메시지 1회 표시. (2) Workspace Detection — 기존 aidlc-state.md 발견·재개, frontend/ 코드 존재(brownfield 변경). 자체 작성 코드라 별도 Reverse Engineering 불필요(application-design + code-summary 아티팩트 보유). (3) 목표 목업 이미지(바탕화면 PNG) + ui-design-comparison.md 로드 완료. (4) Requirements Analysis 진입 — 요청 유형=Enhancement/UI 재디자인, 범위=단일 유닛(U2 frontend), 복잡도=Moderate. 진짜 미결 UX 결정에 대한 requirement-verification-questions.md 작성.
+**Context**: INCEPTION 재진입 — Requirements Analysis (신규 UI 변경 요청). 프로젝트는 직전 OPERATIONS(placeholder) 상태였음.
+
+---
+
+## Requirements Analysis (UI 재디자인) — 확인 질문 답변 수신
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "답변 완료 햇어 확인해봐" → (초기 미저장) → "다시해볼래" 후 재저장. 답변 원문(ui-redesign-verification-questions.md):
+Q1=A "경로준 사진를 참조해서 최대한 유사하게 만들어"
+Q2=A "검색 제출 후 /intent → /advise를 자동 연속 호출하고 구조화 의도 편집 화면은 노출하지 않는다. 단, /intent가 clarification이 필요하다고 판단한 경우에만 사용자에게 추가 질문 UI를 노출한다."
+Q3=A "실제 호출 경계와 진행 단계를 연결하되 percentage는 UX용 애니메이션으로 부드럽게 표현. /advise 응답 대기 중에는 90% 수준에서 유지하고 실제 응답 도착 시 100% 완료 후 결과 화면을 표시."
+Q4=B "현재 데모에서는 role=Sales 등 기본값으로 처리하고 검색 홈에는 노출하지 않는다. 향후 실제 SSO 연동 시 로그인 사용자의 권한/role을 자동으로 받아 /advise context에 전달하도록 확장 가능한 구조로 유지한다 김지훈은 DevRel로 바꿔줘"
+Q5=A "React 상태 기반으로 홈 ↔ 분석/결과 화면을 전환한다. 별도 router 의존성은 추가하지 않는다. 결과 화면의 '새 질문'으로 홈 상태로 복귀한다"
+Q6=X "기본 매핑은 A를 따른다. 판단 근거=rationale/evidence 기반 판정 이유(REUSE/EXTENSION/NEED REVIEW/DEVELOP), 적합도 분석=점수 근거·evaluationStatus·강점/차이점, 참고 자료=Evidence Source/링크"
+Q7=A "사용자에게 노출되는 브랜딩과 카피는 Anabada 기준으로 전체 변경한다. package.json name, API명, 내부 코드 identifier 등 비노출 기술 식별자는 기존 값을 유지"
+Q8=A "기존 확장 설정을 그대로 유지"
+Q9=B (데스크톱 전용)
+**AI Response**: 모순/모호 없음. Q4 해석 확정: 역할 선택 UI 미구현, /advise context role 기본값을 DevRel로 설정, 우상단 계정 표시를 "DevRel"로 변경(SSO 확장 가능 구조 주석). 확장 설정 변경 없음(Security No/Resiliency No/PBT Partial 유지). requirements.md 작성 → 승인 게이트 제시.
+**Context**: INCEPTION - Requirements Analysis (UI 재디자인), 답변 분석 완료
+
+## Requirements Analysis (UI 재디자인) — APPROVED → 전체 워크플로우 자율 진행
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: "승인해" / "단계별로 Workflow 진행하고 승인하고 Commit하고 Push해줘"
+**AI Response**: Requirements Analysis 승인 처리. 사용자가 이후 전 단계 자율 진행 + 각 게이트 승인 + 최종 commit/push를 사전 승인함. 계획: Workflow Planning(실행) → User Stories(SKIP, 명확한 재스킨) → Application Design(Minimal, UI 컴포넌트/상태 흐름) → Units Generation(SKIP, 단일 유닛 U2) → Construction[Functional/NFR/Infra Design SKIP(신규 도메인/NFR/인프라 없음, 계약 재사용) → Code Generation(실행)] → Build and Test(실행) → commit + push. 각 단계 audit 로깅.
+**Context**: INCEPTION Requirements Analysis APPROVED. 자율 진행 모드 진입.
+
+## Workflow Planning + Application Design (UI 재디자인) — 자동 진행·승인
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: (사전 승인: "단계별로 Workflow 진행하고 승인하고 Commit하고 Push해줘")
+**AI Response**: Workflow Planning 실행 → `ui-redesign-workflow-plan.md`. 단계 결정: User Stories SKIP(명확한 재스킨), Application Design=Minimal 실행, Units Generation SKIP(단일 U2), Construction의 Functional/NFR/Infra Design SKIP(신규 도메인/NFR/인프라 없음, U1 계약 재사용), Code Generation·Build/Test 실행. Application Design(Minimal) 실행 → `application-design/ui-redesign-design.md`: 화면 흐름(home↔result 상태 기반), 컴포넌트 구조(Header/SearchHome/ProgressSteps/VerdictBanner/CandidateList 신규, badges/api/types/presets 재사용, IntentPanel/RankingPanel/EvidencePanel/FeedbackBar/panel-props 삭제), App 오케스트레이션(runSearch: /intent→/advise, phase 기반 진행률), D4 권한 컨텍스트 처리, D6 탭 매핑, 라이트 테마 토큰, 접근성 이관. 두 문서 승인 처리(사전 승인). Code Generation 진입.
+**Context**: INCEPTION - Workflow Planning + Application Design(Minimal) 완료·승인. → CONSTRUCTION Code Generation.
+
+## Code Generation + Build and Test (UI 재디자인) — DONE, commit/push
+**Timestamp**: 2026-09-09T00:00:00Z
+**User Input**: (사전 승인: "단계별로 Workflow 진행하고 승인하고 Commit하고 Push해줘")
+**AI Response**: Code Generation 실행 — 신규 컴포넌트 6종(Header, SearchHome, ProgressSteps, VerdictBanner, CandidateList, demo/examples.ts), App.tsx/styles.css 전면 재작성(라이트 테마, home/result 상태 전환, /intent→/advise 자동 오케스트레이션, phase 진행률, D4 권한 처리), index.html title 변경. 구 3컬럼 대시보드 4패널(IntentPanel/RankingPanel/EvidencePanel/FeedbackBar)+panel-props 삭제. badges/api/types/presets 재사용. Build and Test: `npm run build`(tsc strict 0 오류, vite build 40 modules) 성공. Playwright(--no-save 임시)로 백엔드 mock 후 홈/결과 화면 렌더 캡처 → 목표 목업과 시각 일치 확인, .cand-info 스택 미세수정 후 재검증. 임시 스크립트/스크린샷/playwright 흔적 정리(node_modules gitignore, package.json 불변). code-summary(`ui-redesign-code-summary.md`) 작성, aidlc-state 갱신. → commit + push.
+**Context**: CONSTRUCTION(Change Request #2) 완료. 변경분 commit 후 origin/review/human-feedback push.

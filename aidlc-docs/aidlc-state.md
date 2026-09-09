@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Greenfield
 - **Start Date**: 2026-09-08T00:00:00Z
-- **Current Stage**: OPERATIONS (placeholder) — CONSTRUCTION 전 단계 완료·승인. Build and Test APPROVED(제품 전체 U1+U2): U1 44/44·coverage 92%, U2 tsc strict 0 + vite build 38 modules, 통합 A 4/4. 사용자 승인 2026-09-09. Operations는 향후 배포/모니터링 확장을 위한 placeholder.
+- **Current Stage**: INCEPTION (재진입) — 신규 변경 요청 "UI 재디자인(Anabada 검색형 라이트 UI)". Requirements Analysis 완료·승인 대기. (직전: CONSTRUCTION 전 단계 완료·Build and Test APPROVED U1 44/44·92%, U2 strict 0 + build 38 modules; OPERATIONS placeholder 진입 상태였음.)
 - **Discovery Input**: docs/aidlc/discovery-input.md (sole Evidence/input source per user constraint)
 
 ## Workspace State
@@ -51,7 +51,27 @@
 - [x] Build and Test — APPROVED(제품 전체 U1+U2, 사용자 승인 2026-09-09): U1 44/44·92%, U2 tsc strict 0 + vite build 38 modules, 통합 A 4/4. 아티팩트: build/unit/integration(Part A+B)/performance/e2e(신규)/summary. Part B 실 렌더링·성능·실 LLM은 데모/Operations 단계.
 
 ### 🟡 OPERATIONS PHASE
-- [ ] Operations — PLACEHOLDER (향후 배포/모니터링 확장 대상; CONSTRUCTION 완료로 현재 진입 지점)
+- [ ] Operations — PLACEHOLDER (향후 배포/모니터링 확장 대상)
+
+---
+
+## 🔄 Change Request #2 — UI 재디자인 (Anabada 검색형 라이트 UI) [INCEPTION 재진입]
+**요청일**: 2026-09-09 · 유형: Enhancement/UI · 범위: U2 frontend only · 복잡도: Moderate
+
+### 🔵 INCEPTION PHASE
+- [x] Workspace Detection (기존 상태 재개, brownfield 변경, Reverse Engineering 불필요)
+- [x] Requirements Analysis — APPROVED (`ui-redesign-requirements.md`)
+- [x] User Stories — SKIP (명확한 재스킨, 신규 유저 여정 없음)
+- [x] Workflow Planning — APPROVED (`plans/ui-redesign-workflow-plan.md`)
+- [x] Application Design — APPROVED, Minimal (`application-design/ui-redesign-design.md`)
+- [x] Units Generation — SKIP (단일 유닛 U2)
+
+### 🟢 CONSTRUCTION PHASE (Change Request #2)
+- [x] Functional/NFR/Infra Design — SKIP (신규 도메인/NFR/인프라 없음, U1 계약 재사용)
+- [x] Code Generation — DONE (Anabada 검색형 라이트 UI 구현; Header/SearchHome/ProgressSteps/VerdictBanner/CandidateList 신규, App/styles/index.html 재작성, 구 4패널+panel-props 삭제). `ui-redesign-code-summary.md`
+- [x] Build and Test — DONE (tsc --noEmit strict 0 오류, vite build 40 modules; Playwright 홈/결과 화면 시각 검증 통과, 백엔드 mock. API/DTO 불변 → U1 회귀 없음)
+
+**Change Request #2 상태**: CONSTRUCTION 완료. commit + push 진행.
 
 ## Open Decisions (carried forward)
 - **A-2**: 권한별 Source 노출 세부 정책 → **RESOLVED (Application Design Q4=A)**: per-asset 권한 모델(allowedRoles/allowedUsers), Source-level 정책 레이어 없음.
